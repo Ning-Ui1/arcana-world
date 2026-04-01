@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARCANA | The Digital Alchemist's Altar</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <style>
+        :root {
+            --color-obsidian: #050505;
+            --color-ethereal-gold: #c5a059;
+            --color-mystic-purple: #2d1b4e;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--color-obsidian);
+            color: #ffffff;
+            font-family: 'Cinzel', serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            z-index: 1;
+        }
+
+        .ui-overlay {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 80vh;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 3rem;
+            letter-spacing: 0.5em;
+            color: var(--color-ethereal-gold);
+            margin-top: 50px;
+            opacity: 0;
+        }
+
+        .controls {
+            margin-bottom: 50px;
+            pointer-events: auto;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(197, 160, 89, 0.3);
+            color: var(--color-ethereal-gold);
+            padding: 15px 40px;
+            font-size: 0.8rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.5s ease;
+            margin: 0 10px;
+        }
+
+        button:hover {
+            background: rgba(197, 160, 89, 0.1);
+            border-color: var(--color-ethereal-gold);
+            box-shadow: 0 0 20px rgba(197, 160, 89, 0.2);
+        }
+
+        .loader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #050505;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 1s ease;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .status-text {
+            color: var(--color-ethereal-gold);
+            font-size: 0.7rem;
+            letter-spacing: 1em;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+    </style>
+</head>
+<body>
+    <div class="loader" id="loader">
+        <div class="status-text">INVOKING ARCANA...</div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div class="ui-overlay">
+        <h1 id="main-title">ARCANA</h1>
+        <div class="controls">
+            <button id="flip-btn">Reveal Fate</button>
+            <button id="dissipate-btn">Dissipate</button>
+        </div>
+    </div>
+
+    <script>
+        // Three.js Scene Setup
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        camera.position.z = 8;
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 1);
+        pointLight.position.set(5, 5, 5);
+        scene.add(pointLight);
+
+        const spotLight = new THREE.SpotLight(0x8a2be2, 2);
+        spotLight.position.set(-5, 5, 5);
+        scene.add(spotLight);
+
+        // Card Geometry
+        const cardGeometry = new THREE.BoxGeometry(2.2, 3.8, 0.05);
+        const materials = [
+            new THREE.MeshStandardMaterial({ color: 0x0a0a0a }), // Right
+            new THREE.MeshStandardMaterial({ color: 0x0a0a0a }), // Left
+            new THREE.MeshStandardMaterial({ color: 0x0a0a0a }), // Top
+            new THREE.MeshStandardMaterial({ color: 0x0a0a0a }), // Bottom
+            new THREE.MeshStandardMaterial({ color: 0x1a1a1a, emissive: 0x2d1b4e, emissiveIntensity: 0.2 }), // Front
+            new THREE.MeshStandardMaterial({ color: 0x0a0a0a, emissive: 0xc5a059, emissiveIntensity: 0.1 })  // Back
+        ];
+        const card = new THREE.Mesh(cardGeometry, materials);
+        scene.add(card);
+
+        // Particle System
+        const particleCount = 1500;
+        const particleGeometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+        const velocities = new Float32Array(particleCount * 3);
+
+        for (let i = 0; i < particleCount; i++) {
+            positions[i * 3] = (Math.random() - 0.5) * 2;
+            positions[i * 3 + 1] = (Math.random() - 0.5) * 3.8;
+            positions[i * 3 + 2] = (Math.random() - 0.5) * 0.1;
+
+            velocities[i * 3] = (Math.random() - 0.5) * 0.02;
+            velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.02;
+            velocities[i * 3 + 2] = Math.random() * 0.04;
+        }
+
+        particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        const particleMaterial = new THREE.PointsMaterial({
+            color: 0xc5a059,
+            size: 0.03,
+            transparent: true,
+            opacity: 0,
+            blending: THREE.AdditiveBlending
+        });
+        const particles = new THREE.Points(particleGeometry, particleMaterial);
+        scene.add(particles);
+
+        // Mouse Parallax
+        let mouseX = 0, mouseY = 0;
+        window.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth) - 0.5;
+            mouseY = (e.clientY / window.innerHeight) - 0.5;
+        });
+
+        // Animations
+        let isFlipped = false;
+        let isDissipated = false;
+
+        document.getElementById('flip-btn').addEventListener('click', () => {
+            isFlipped = !isFlipped;
+            gsap.to(card.rotation, {
+                y: isFlipped ? Math.PI : 0,
+                duration: 1.2,
+                ease: "back.out(1.7)"
+            });
+            document.getElementById('flip-btn').innerText = isFlipped ? "Reset" : "Reveal Fate";
+        });
+
+        document.getElementById('dissipate-btn').addEventListener('click', () => {
+            if (isDissipated) return;
+            isDissipated = true;
+            
+            // Fade out card
+            gsap.to(card.material, { opacity: 0, duration: 1, stagger: 0.1, onComplete: () => { card.visible = false; } });
+            
+            // Trigger Particles
+            particleMaterial.opacity = 0.8;
+            gsap.to(particleMaterial, {
+                opacity: 0,
+                duration: 2.5,
+                delay: 1,
+                ease: "power2.inOut",
+                onComplete: () => {
+                    card.visible = true;
+                    gsap.to(card.material, { opacity: 1, duration: 1 });
+                    isDissipated = false;
+                    isFlipped = false;
+                    card.rotation.y = 0;
+                    document.getElementById('flip-btn').innerText = "Reveal Fate";
+                }
+            });
+        });
+
+        // Loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (!isFlipped && !isDissipated) {
+                card.rotation.x += (mouseY * 0.5 - card.rotation.x) * 0.1;
+                card.rotation.y += (mouseX * 0.5 - card.rotation.y) * 0.1;
+            }
+
+            if (isDissipated) {
+                const pos = particleGeometry.attributes.position.array;
+                for (let i = 0; i < particleCount; i++) {
+                    pos[i * 3] += velocities[i * 3];
+                    pos[i * 3 + 1] += velocities[i * 3 + 1];
+                    pos[i * 3 + 2] += velocities[i * 3 + 2];
+                }
+                particleGeometry.attributes.position.needsUpdate = true;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Init Sequence
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById('loader').classList.add('hidden');
+                gsap.to('#main-title', { opacity: 1, y: -20, duration: 1.5, delay: 0.5, ease: "power3.out" });
+                animate();
+            }, 1500);
+        };
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
