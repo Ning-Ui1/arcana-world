@@ -1,362 +1,965 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARCANA V2 | The Sacred Ritual</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --gold: #c5a059;
-            --obsidian: #020202;
-        }
-        body, html {
-            margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            background: var(--obsidian);
-            color: white;
-            font-family: 'Cinzel', serif;
-            overflow: hidden;
-        }
-        #canvas-container {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 1;
-        }
-        .overlay {
-            position: relative;
-            z-index: 10;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            pointer-events: none;
-            background: radial-gradient(circle at center, transparent 0%, rgba(2,2,2,0.4) 100%);
-        }
-        h1 {
-            font-size: 4rem;
-            letter-spacing: 1.2rem;
-            color: var(--gold);
-            margin: 0;
-            text-shadow: 0 0 40px rgba(197, 160, 89, 0.4);
-            opacity: 0;
-        }
-        .controls {
-            margin-top: 100px;
-            pointer-events: auto;
-            opacity: 0;
-        }
-        .btn {
-            background: transparent;
-            border: 0.5px solid rgba(197, 160, 89, 0.4);
-            color: var(--gold);
-            padding: 18px 50px;
-            font-family: inherit;
-            text-transform: uppercase;
-            letter-spacing: 0.4rem;
-            font-size: 0.7rem;
-            cursor: pointer;
-            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            overflow: hidden;
-            margin: 0 15px;
-        }
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 120%; height: 120%;
-            background: var(--gold);
-            transform: translate(-50%, -50%) scale(0);
-            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            z-index: -1;
-            opacity: 0.1;
-        }
-        .btn:hover::before { transform: translate(-50%, -50%) scale(1); }
-        .btn:hover {
-            border-color: var(--gold);
-            letter-spacing: 0.5rem;
-            box-shadow: 0 0 30px rgba(197, 160, 89, 0.2);
-        }
-        
-        /* Ritual Loader */
-        .loader {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .ritual-circle {
-            width: 100px; height: 100px;
-            border: 1px solid var(--gold);
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 3s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
-        }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARCANA · 宇宙的密语</title>
+<meta name="description" content="每一张牌背后，藏着你已经知道的答案。免费首抽，无需注册。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Grotesk:wght@300;400&display=swap" rel="stylesheet">
+<style>
+/* ── RESET ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:#05030f;
+  color:#f0ece4;
+  font-family:'Cormorant Garamond',Georgia,serif;
+  overflow-x:hidden;
+  cursor:none;
+}
+::selection{background:rgba(201,169,110,.2);color:#e8c98a}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:#05030f}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#c9a96e,#7b4dff);border-radius:2px}
 
-        .vignette {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            box-shadow: inset 0 0 200px rgba(0,0,0,0.9);
-            pointer-events: none;
-            z-index: 5;
-        }
-    </style>
+/* ── CUSTOM CURSOR ── */
+#cur-dot{
+  width:7px;height:7px;background:#c9a96e;border-radius:50%;
+  position:fixed;pointer-events:none;z-index:9999;
+  transform:translate(-50%,-50%);
+  transition:transform .15s,width .2s,height .2s;
+}
+#cur-ring{
+  width:38px;height:38px;border:1px solid rgba(201,169,110,.5);border-radius:50%;
+  position:fixed;pointer-events:none;z-index:9998;
+  transform:translate(-50%,-50%);
+  transition:width .4s cubic-bezier(.22,1,.36,1),height .4s cubic-bezier(.22,1,.36,1),border-color .3s;
+}
+body:has(a:hover) #cur-ring,
+body:has(button:hover) #cur-ring{width:64px;height:64px;border-color:#c9a96e}
+
+/* ── LOADER ── */
+#loader{
+  position:fixed;inset:0;z-index:9990;
+  background:#05030f;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;
+  transition:opacity .8s cubic-bezier(.22,1,.36,1),visibility .8s;
+}
+#loader.out{opacity:0;visibility:hidden}
+#loader svg{width:100px;height:100px}
+#loader svg path{
+  stroke:#c9a96e;stroke-width:.6;fill:none;
+  stroke-dasharray:600;stroke-dashoffset:600;
+  animation:draw 2.2s cubic-bezier(.22,1,.36,1) forwards;
+}
+#loader p{
+  font-family:'Cinzel Decorative',serif;font-size:.65rem;
+  letter-spacing:.5em;color:#c9a96e;text-transform:uppercase;
+  opacity:0;animation:fi .5s ease 1.8s forwards;
+}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes fi{to{opacity:1}}
+@keyframes fu{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes aurora{0%{opacity:.5;transform:translateX(-50%) scale(1) rotate(0deg)}100%{opacity:.9;transform:translateX(-50%) scale(1.2) rotate(3deg)}}
+@keyframes float{0%,100%{transform:translateY(0) rotateZ(.5deg)}50%{transform:translateY(-18px) rotateZ(-.5deg)}}
+@keyframes pulse-ring{0%{box-shadow:0 0 0 0 rgba(201,169,110,.4)}70%{box-shadow:0 0 0 20px rgba(201,169,110,0)}100%{box-shadow:0 0 0 0 rgba(201,169,110,0)}}
+@keyframes spin-slow{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes spin-rev{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(-360deg)}}
+@keyframes particle-drift{0%{opacity:0;transform:translateY(0) translateX(0) scale(0)}20%{opacity:1}80%{opacity:.6}100%{opacity:0;transform:translateY(-120px) translateX(var(--dx)) scale(1.5)}}
+@keyframes card-enter{from{opacity:0;transform:translateY(60px) rotateX(20deg)}to{opacity:1;transform:translateY(0) rotateX(0deg)}}
+@keyframes reveal-text{from{opacity:0;clip-path:inset(0 100% 0 0)}to{opacity:1;clip-path:inset(0 0% 0 0)}}
+
+/* ── CANVAS ── */
+#bg-canvas{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  z-index:0;pointer-events:none;
+}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:24px 48px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(180deg,rgba(5,3,15,.9) 0%,transparent 100%);
+  transition:backdrop-filter .4s,background .4s;
+}
+nav.scrolled{backdrop-filter:blur(20px);background:rgba(5,3,15,.85);border-bottom:1px solid rgba(201,169,110,.12)}
+.logo{
+  font-family:'Cinzel Decorative',serif;font-size:1.1rem;
+  letter-spacing:.35em;color:#c9a96e;text-transform:uppercase;text-decoration:none;
+}
+.nav-links{display:flex;gap:36px;list-style:none}
+.nav-links a{
+  font-family:'Space Grotesk',sans-serif;font-size:.7rem;
+  letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(240,236,228,.5);text-decoration:none;
+  transition:color .25s;
+}
+.nav-links a:hover{color:#c9a96e}
+
+/* ── HERO ── */
+#hero{
+  position:relative;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:120px 24px 80px;overflow:hidden;
+}
+.aurora{
+  position:absolute;top:-10%;left:50%;
+  width:90vw;height:70vh;
+  background:radial-gradient(ellipse at 40% 40%,rgba(123,77,255,.22) 0%,rgba(201,169,110,.07) 45%,transparent 70%);
+  filter:blur(50px);pointer-events:none;
+  animation:aurora 9s ease-in-out infinite alternate;
+}
+.sacred-geo{
+  position:absolute;top:50%;left:50%;
+  width:min(80vmin,700px);height:min(80vmin,700px);
+  pointer-events:none;opacity:.06;
+}
+.sacred-geo .ring1{animation:spin-slow 40s linear infinite}
+.sacred-geo .ring2{animation:spin-rev 28s linear infinite}
+.hero-eyebrow{
+  font-family:'Space Grotesk',sans-serif;font-size:.68rem;
+  letter-spacing:.5em;text-transform:uppercase;color:#c9a96e;
+  margin-bottom:28px;
+  opacity:0;animation:fu .8s cubic-bezier(.22,1,.36,1) .4s forwards;
+}
+.hero-title{
+  font-family:'Cinzel Decorative',serif;
+  font-size:clamp(3rem,10vw,8rem);font-weight:400;
+  letter-spacing:.1em;line-height:1;
+  color:transparent;
+  background:linear-gradient(135deg,#c9a96e 0%,#f0ece4 40%,#c9a96e 70%,#e8c98a 100%);
+  -webkit-background-clip:text;background-clip:text;
+  margin-bottom:24px;
+  opacity:0;animation:fu 1s cubic-bezier(.22,1,.36,1) .6s forwards;
+  text-shadow:none;
+  filter:drop-shadow(0 0 40px rgba(201,169,110,.3));
+}
+.hero-sub{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(1rem,2.5vw,1.4rem);
+  color:rgba(240,236,228,.55);max-width:520px;
+  margin:0 auto 52px;line-height:1.8;
+  opacity:0;animation:fu 1s cubic-bezier(.22,1,.36,1) .85s forwards;
+}
+
+/* ── CARD STAGE ── */
+.card-stage{
+  position:relative;margin-bottom:52px;
+  perspective:1400px;
+  opacity:0;animation:fu 1.2s cubic-bezier(.22,1,.36,1) 1s forwards;
+}
+.tarot-card{
+  width:200px;height:340px;
+  position:relative;transform-style:preserve-3d;
+  transition:transform .05s linear;
+  animation:float 7s ease-in-out infinite;
+  cursor:pointer;
+}
+.tarot-card.flipping{
+  animation:none;
+  transition:transform .9s cubic-bezier(.76,0,.24,1)!important;
+  transform:rotateY(180deg)!important;
+}
+.card-face,.card-back{
+  position:absolute;inset:0;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  border-radius:16px;overflow:hidden;
+}
+.card-back{
+  background:linear-gradient(160deg,#1a0a40 0%,#0d0620 50%,#1a0a40 100%);
+  border:1px solid rgba(201,169,110,.25);
+  box-shadow:0 0 60px rgba(123,77,255,.25),0 0 0 1px rgba(201,169,110,.15),inset 0 0 80px rgba(123,77,255,.1);
+  display:flex;align-items:center;justify-content:center;
+}
+.card-back-inner{
+  width:170px;height:310px;
+  border:1px solid rgba(201,169,110,.2);
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+.card-back-inner::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(45deg,transparent,transparent 8px,rgba(201,169,110,.025) 8px,rgba(201,169,110,.025) 9px);
+}
+.card-symbol{
+  font-size:3rem;opacity:.6;filter:drop-shadow(0 0 12px rgba(201,169,110,.5));
+  position:relative;z-index:1;
+}
+
+/* Holo layer */
+.card-holo{
+  position:absolute;inset:0;border-radius:16px;
+  background:linear-gradient(var(--ha,135deg),transparent 0%,rgba(201,169,110,.05) 30%,rgba(123,77,255,.08) 50%,rgba(72,209,204,.06) 70%,transparent 100%);
+  mix-blend-mode:color-dodge;pointer-events:none;
+  transition:background .08s,filter .08s;
+}
+
+.card-face{
+  transform:rotateY(180deg);
+  background:linear-gradient(160deg,#1a0a40 0%,#0d0620 50%,#1a0a40 100%);
+  border:1px solid rgba(201,169,110,.35);
+  box-shadow:0 0 80px rgba(201,169,110,.2),0 0 0 1px rgba(201,169,110,.2);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px 20px;text-align:center;
+}
+.card-face-symbol{font-size:4rem;margin-bottom:12px;filter:drop-shadow(0 0 20px rgba(201,169,110,.6))}
+.card-face-name{
+  font-family:'Cinzel Decorative',serif;font-size:.72rem;
+  letter-spacing:.2em;color:#c9a96e;margin-bottom:8px;
+}
+.card-face-meaning{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:.85rem;color:rgba(240,236,228,.65);line-height:1.7;
+}
+
+/* Glow ring under card */
+.card-glow{
+  position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);
+  width:120px;height:20px;
+  background:radial-gradient(ellipse at center,rgba(123,77,255,.5) 0%,transparent 70%);
+  filter:blur(8px);pointer-events:none;
+}
+
+/* Orbit particles */
+.orbit-particle{
+  position:absolute;top:50%;left:50%;
+  width:4px;height:4px;border-radius:50%;
+  background:#c9a96e;pointer-events:none;
+  animation:none;
+}
+
+/* ── BUTTONS ── */
+.btn-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.btn{
+  position:relative;overflow:hidden;
+  padding:15px 38px;border-radius:100px;
+  font-family:'Cinzel Decorative',serif;font-size:.68rem;
+  letter-spacing:.22em;text-transform:uppercase;
+  cursor:pointer;transition:all .35s cubic-bezier(.22,1,.36,1);
+  border:none;outline:none;
+}
+.btn-primary{
+  background:transparent;
+  border:1px solid rgba(201,169,110,.55);
+  color:#c9a96e;
+}
+.btn-primary:hover{
+  background:rgba(201,169,110,.07);
+  border-color:#c9a96e;
+  box-shadow:0 0 24px rgba(201,169,110,.3),0 0 60px rgba(201,169,110,.1);
+  transform:translateY(-2px);color:#e8c98a;
+}
+.btn-secondary{
+  background:transparent;
+  border:1px solid rgba(123,77,255,.4);
+  color:rgba(240,236,228,.6);
+}
+.btn-secondary:hover{
+  border-color:#7b4dff;color:rgba(240,236,228,.9);
+  box-shadow:0 0 24px rgba(123,77,255,.3);
+  transform:translateY(-2px);
+}
+.btn .ripple{
+  position:absolute;border-radius:50%;
+  background:rgba(201,169,110,.15);
+  transform:scale(0);animation:rpl .6s linear;
+  pointer-events:none;
+}
+@keyframes rpl{to{transform:scale(5);opacity:0}}
+
+/* ── RESULT AREA ── */
+#result-area{
+  max-width:640px;margin:48px auto 0;
+  display:none;opacity:0;
+  animation:fu .9s cubic-bezier(.22,1,.36,1) forwards;
+}
+.result-divider{
+  width:120px;height:1px;margin:0 auto 32px;
+  background:linear-gradient(90deg,transparent,#c9a96e,transparent);
+}
+.result-card-name{
+  font-family:'Cinzel Decorative',serif;font-size:1.2rem;
+  letter-spacing:.15em;color:#c9a96e;margin-bottom:8px;
+}
+.result-position{
+  display:inline-block;
+  font-family:'Space Grotesk',sans-serif;font-size:.65rem;
+  letter-spacing:.25em;text-transform:uppercase;
+  padding:4px 14px;border-radius:100px;
+  border:1px solid rgba(201,169,110,.3);color:rgba(201,169,110,.8);
+  margin-bottom:24px;
+}
+.result-meaning{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:1.15rem;line-height:1.95;
+  color:rgba(240,236,228,.75);margin-bottom:36px;
+}
+
+/* ── DIVIDER ── */
+.section-divider{
+  width:100%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(201,169,110,.2),transparent);
+  position:relative;z-index:1;
+}
+
+/* ── PRICING ── */
+#pricing{
+  position:relative;z-index:1;
+  padding:120px 48px;background:rgba(5,3,15,.92);
+}
+.pricing-eyebrow{
+  font-family:'Space Grotesk',sans-serif;font-size:.65rem;
+  letter-spacing:.5em;text-transform:uppercase;color:#c9a96e;
+  text-align:center;margin-bottom:16px;
+  opacity:0;
+}
+.pricing-title{
+  font-family:'Cinzel Decorative',serif;
+  font-size:clamp(1.6rem,4vw,3rem);font-weight:400;
+  letter-spacing:.06em;color:#f0ece4;text-align:center;
+  margin-bottom:72px;
+  opacity:0;
+}
+.pricing-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:24px;max-width:1060px;margin:0 auto;
+}
+.pricing-card{
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(201,169,110,.15);
+  border-radius:20px;
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  padding:44px 32px;text-align:center;
+  position:relative;overflow:hidden;
+  transition:transform .4s cubic-bezier(.22,1,.36,1),box-shadow .4s,border-color .4s;
+  opacity:0;
+}
+.pricing-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(201,169,110,.07) 0%,transparent 55%);
+  opacity:0;transition:opacity .3s;
+}
+.pricing-card:hover::before{opacity:1}
+.pricing-card:hover{
+  transform:translateY(-10px);
+  border-color:rgba(201,169,110,.35);
+  box-shadow:0 20px 60px rgba(0,0,0,.4),0 0 40px rgba(201,169,110,.1);
+}
+.pricing-card.featured{
+  border-color:rgba(201,169,110,.4);
+  background:rgba(201,169,110,.04);
+}
+.pricing-card.featured::after{
+  content:'MOST LOVED';
+  position:absolute;top:18px;right:18px;
+  font-family:'Space Grotesk',sans-serif;font-size:.58rem;
+  letter-spacing:.22em;color:#c9a96e;
+  border:1px solid rgba(201,169,110,.35);
+  padding:4px 10px;border-radius:100px;
+}
+.p-tier{
+  font-family:'Space Grotesk',sans-serif;font-size:.65rem;
+  letter-spacing:.35em;text-transform:uppercase;
+  color:rgba(201,169,110,.7);margin-bottom:20px;
+}
+.p-price{
+  font-family:'Cinzel Decorative',serif;
+  font-size:clamp(2.2rem,5vw,3.2rem);font-weight:400;
+  color:#f0ece4;margin-bottom:6px;
+}
+.p-period{
+  font-family:'Space Grotesk',sans-serif;font-size:.68rem;
+  color:rgba(240,236,228,.35);letter-spacing:.1em;margin-bottom:28px;
+}
+.p-divider{width:40px;height:1px;background:rgba(201,169,110,.3);margin:0 auto 28px}
+.p-features{list-style:none;margin-bottom:36px}
+.p-features li{
+  font-family:'Cormorant Garamond',serif;font-size:.95rem;
+  color:rgba(240,236,228,.6);padding:7px 0;
+  border-bottom:1px solid rgba(255,255,255,.04);
+  line-height:1.5;
+}
+.p-features li:last-child{border-bottom:none}
+
+/* ── EMAIL CAPTURE ── */
+#cta{
+  position:relative;z-index:1;
+  padding:120px 48px;text-align:center;
+  background:linear-gradient(180deg,rgba(5,3,15,.95) 0%,rgba(13,8,32,.95) 100%);
+}
+.cta-glow{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:60vw;height:300px;
+  background:radial-gradient(ellipse at top,rgba(123,77,255,.12) 0%,transparent 70%);
+  pointer-events:none;
+}
+.cta-title{
+  font-family:'Cinzel Decorative',serif;
+  font-size:clamp(1.4rem,3.5vw,2.4rem);font-weight:400;
+  color:#f0ece4;margin-bottom:16px;letter-spacing:.05em;
+}
+.cta-sub{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:1.05rem;color:rgba(240,236,228,.5);
+  max-width:420px;margin:0 auto 44px;line-height:1.8;
+}
+.email-form{display:flex;gap:0;max-width:440px;margin:0 auto;justify-content:center}
+.email-input{
+  flex:1;padding:16px 24px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(201,169,110,.25);
+  border-right:none;border-radius:100px 0 0 100px;
+  color:#f0ece4;font-family:'Cormorant Garamond',serif;font-size:1rem;
+  outline:none;transition:border-color .3s;
+}
+.email-input:focus{border-color:rgba(201,169,110,.6)}
+.email-input::placeholder{color:rgba(240,236,228,.3)}
+.email-btn{
+  padding:16px 28px;
+  background:rgba(201,169,110,.12);
+  border:1px solid rgba(201,169,110,.4);
+  border-left:none;border-radius:0 100px 100px 0;
+  color:#c9a96e;font-family:'Cinzel Decorative',serif;font-size:.62rem;
+  letter-spacing:.2em;cursor:pointer;
+  transition:all .3s;white-space:nowrap;
+}
+.email-btn:hover{background:rgba(201,169,110,.2);color:#e8c98a}
+.email-confirm{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:.9rem;color:rgba(201,169,110,.7);
+  margin-top:16px;display:none;
+}
+
+/* ── FOOTER ── */
+footer{
+  position:relative;z-index:1;
+  background:#05030f;
+  border-top:1px solid rgba(201,169,110,.1);
+  padding:60px 48px 40px;text-align:center;
+}
+footer::before{
+  content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:60vw;height:180px;
+  background:radial-gradient(ellipse at bottom,rgba(123,77,255,.08) 0%,transparent 70%);
+  pointer-events:none;
+}
+.footer-logo{
+  font-family:'Cinzel Decorative',serif;font-size:.95rem;
+  letter-spacing:.4em;color:#c9a96e;margin-bottom:16px;
+}
+.footer-tagline{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:.9rem;color:rgba(240,236,228,.3);margin-bottom:36px;
+}
+.footer-links{display:flex;justify-content:center;gap:32px;list-style:none;margin-bottom:36px}
+.footer-links a{
+  font-family:'Space Grotesk',sans-serif;font-size:.65rem;
+  letter-spacing:.15em;text-transform:uppercase;
+  color:rgba(240,236,228,.25);text-decoration:none;transition:color .25s;
+}
+.footer-links a:hover{color:#c9a96e}
+.footer-copy{
+  font-family:'Space Grotesk',sans-serif;font-size:.65rem;
+  color:rgba(240,236,228,.2);letter-spacing:.05em;
+}
+
+/* ── REVEAL ANIMATION ── */
+.reveal{opacity:0;transform:translateY(36px);transition:opacity .8s cubic-bezier(.22,1,.36,1),transform .8s cubic-bezier(.22,1,.36,1)}
+.reveal.on{opacity:1;transform:none}
+.reveal-d1{transition-delay:.1s}
+.reveal-d2{transition-delay:.2s}
+.reveal-d3{transition-delay:.3s}
+.reveal-d4{transition-delay:.4s}
+
+/* ── MOBILE ── */
+@media(max-width:768px){
+  nav{padding:20px 24px}
+  .nav-links{display:none}
+  #hero{padding:100px 20px 60px}
+  #pricing{padding:80px 20px}
+  #cta{padding:80px 20px}
+  .email-form{flex-direction:column}
+  .email-input{border-right:1px solid rgba(201,169,110,.25);border-bottom:none;border-radius:12px 12px 0 0}
+  .email-btn{border-left:1px solid rgba(201,169,110,.4);border-top:none;border-radius:0 0 12px 12px}
+  footer{padding:48px 24px 32px}
+  .footer-links{flex-wrap:wrap;gap:16px}
+  body{cursor:auto}
+  #cur-dot,#cur-ring{display:none}
+}
+</style>
 </head>
 <body>
-    <div class="loader" id="loader">
-        <div class="ritual-circle"></div>
-    </div>
-    <div class="vignette"></div>
-    <div id="canvas-container"></div>
-    <div class="overlay">
-        <h1 id="title">ARCANA</h1>
-        <div class="controls" id="controls">
-            <button class="btn" id="flip-btn">Invoke Fate</button>
-            <button class="btn" id="dissipate-btn">Ascend</button>
+
+<!-- LOADER -->
+<div id="loader">
+  <svg viewBox="0 0 100 100">
+    <path d="M50,10 L61,35 L88,35 L67,52 L74,78 L50,62 L26,78 L33,52 L12,35 L39,35 Z"/>
+    <circle cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="264" style="animation:draw 2.2s cubic-bezier(.22,1,.36,1) .2s forwards"/>
+  </svg>
+  <p>ARCANA · LOADING YOUR DESTINY</p>
+</div>
+
+<!-- CUSTOM CURSOR -->
+<div id="cur-dot"></div>
+<div id="cur-ring"></div>
+
+<!-- THREE.JS CANVAS -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- NAV -->
+<nav id="main-nav">
+  <a href="#" class="logo">ARCANA</a>
+  <ul class="nav-links">
+    <li><a href="#hero">抽牌</a></li>
+    <li><a href="#pricing">服务</a></li>
+    <li><a href="#cta">入圈</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="aurora"></div>
+
+  <!-- Sacred Geometry SVG -->
+  <svg class="sacred-geo" viewBox="0 0 700 700" xmlns="http://www.w3.org/2000/svg">
+    <g class="ring1" transform-origin="350 350">
+      <circle cx="350" cy="350" r="300" fill="none" stroke="#c9a96e" stroke-width=".4"/>
+      <polygon points="350,60 609,495 91,495" fill="none" stroke="#c9a96e" stroke-width=".4"/>
+      <polygon points="350,640 91,205 609,205" fill="none" stroke="#c9a96e" stroke-width=".4"/>
+    </g>
+    <g class="ring2" transform-origin="350 350">
+      <circle cx="350" cy="350" r="220" fill="none" stroke="#7b4dff" stroke-width=".3"/>
+      <polygon points="350,140 530,450 170,450" fill="none" stroke="#7b4dff" stroke-width=".3"/>
+      <polygon points="350,560 170,250 530,250" fill="none" stroke="#7b4dff" stroke-width=".3"/>
+    </g>
+    <circle cx="350" cy="350" r="140" fill="none" stroke="#c9a96e" stroke-width=".25"/>
+    <circle cx="350" cy="350" r="60"  fill="none" stroke="#c9a96e" stroke-width=".25"/>
+  </svg>
+
+  <div class="hero-content" style="position:relative;z-index:1">
+    <p class="hero-eyebrow">The Digital Oracle · 数字先知</p>
+    <h1 class="hero-title">ARCANA</h1>
+    <p class="hero-sub">每一张牌背后，藏着你已经知道的答案<br>不是牌在预言命运，是你在倾听自己</p>
+
+    <!-- TAROT CARD -->
+    <div class="card-stage">
+      <div class="tarot-card" id="tarot-card">
+        <div class="card-back">
+          <div class="card-back-inner">
+            <div class="card-symbol">✦</div>
+          </div>
+          <div class="card-holo" id="holo"></div>
         </div>
+        <div class="card-face" id="card-face">
+          <div class="card-face-symbol" id="cf-symbol">🌟</div>
+          <div class="card-face-name" id="cf-name">THE STAR · 星星</div>
+          <div class="card-face-meaning" id="cf-meaning">希望之光穿透黑暗</div>
+        </div>
+      </div>
+      <div class="card-glow"></div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    
-    <!-- Shaders -->
-    <script id="aurora-vs" type="x-shader/x-vertex">
-        varying vec2 vUv;
-        void main() {
-            vUv = uv;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-    </script>
-    <script id="aurora-fs" type="x-shader/x-fragment">
-        uniform float time;
-        uniform vec2 resolution;
-        varying vec2 vUv;
+    <div class="btn-row">
+      <button class="btn btn-primary" id="draw-btn" onclick="drawCard()">✦ 感应命运</button>
+      <button class="btn btn-secondary" id="reset-btn" onclick="resetCard()" style="display:none">重新抽取</button>
+    </div>
 
-        void main() {
-            vec2 p = vUv * 2.0 - 1.0;
-            p.x *= resolution.x / resolution.y;
-            
-            float color = 0.0;
-            for(float i=1.0; i<4.0; i++) {
-                p.x += 0.3 / i * sin(i * 3.0 * p.y + time + i * 0.5);
-                p.y += 0.3 / i * cos(i * 3.0 * p.x + time + i * 0.5);
-                color += abs(0.01 / p.x) * i;
-            }
-            
-            vec3 baseColor = vec3(0.02, 0.01, 0.05); // Obsidian deep purple
-            vec3 auroraColor = vec3(0.1, 0.05, 0.2) * color;
-            gl_FragColor = vec4(baseColor + auroraColor * 0.3, 1.0);
-        }
-    </script>
+    <!-- RESULT -->
+    <div id="result-area">
+      <div class="result-divider"></div>
+      <div class="result-card-name" id="r-name"></div>
+      <div class="result-position" id="r-pos"></div>
+      <p class="result-meaning" id="r-meaning"></p>
+      <div class="btn-row">
+        <a href="#pricing" class="btn btn-primary">深度解读 →</a>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <script>
-        (function() {
-            // Scene Setup
-            const container = document.getElementById('canvas-container');
-            const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.toneMapping = THREE.ReinhardToneMapping;
-            container.appendChild(renderer.domElement);
+<div class="section-divider"></div>
 
-            camera.position.z = 10;
+<!-- PRICING -->
+<section id="pricing">
+  <p class="pricing-eyebrow reveal">选择你的仪式</p>
+  <h2 class="pricing-title reveal reveal-d1">CHOOSE YOUR RITUAL</h2>
+  <div class="pricing-grid">
 
-            // Lights
-            const ambient = new THREE.AmbientLight(0xffffff, 0.1);
-            scene.add(ambient);
+    <div class="pricing-card reveal reveal-d1">
+      <p class="p-tier">The Seeker</p>
+      <div class="p-price">$0</div>
+      <p class="p-period">永久免费</p>
+      <div class="p-divider"></div>
+      <ul class="p-features">
+        <li>每日单牌感应</li>
+        <li>基础牌义解读</li>
+        <li>数字祭坛访问</li>
+        <li>3D 全息翻牌体验</li>
+      </ul>
+      <button class="btn btn-secondary" style="width:100%;justify-content:center">开始探索</button>
+    </div>
 
-            const goldLight = new THREE.PointLight(0xc5a059, 2, 20);
-            goldLight.position.set(2, 2, 5);
-            scene.add(goldLight);
+    <div class="pricing-card featured reveal reveal-d2">
+      <p class="p-tier">The Alchemist</p>
+      <div class="p-price">$19.9</div>
+      <p class="p-period">每次解读</p>
+      <div class="p-divider"></div>
+      <ul class="p-features">
+        <li>凯尔特十字牌阵</li>
+        <li>AI 深度灵魂分析</li>
+        <li>专属 PDF 报告</li>
+        <li>过去·现在·未来展开</li>
+      </ul>
+      <button class="btn btn-primary" style="width:100%;justify-content:center">开启旅程</button>
+    </div>
 
-            const purpleLight = new THREE.PointLight(0x2d1b4e, 3, 20);
-            purpleLight.position.set(-3, -2, 4);
-            scene.add(purpleLight);
+    <div class="pricing-card reveal reveal-d3">
+      <p class="p-tier">The Master</p>
+      <div class="p-price">$299</div>
+      <p class="p-period">一对一私教</p>
+      <div class="p-divider"></div>
+      <ul class="p-features">
+        <li>大师 1:1 视频解读</li>
+        <li>实体金箔卡牌礼盒</li>
+        <li>终身更新权限</li>
+        <li>专属护身符定制</li>
+      </ul>
+      <button class="btn btn-primary" style="width:100%;justify-content:center">预约大师</button>
+    </div>
 
-            // Background Aurora
-            const bgGeometry = new THREE.PlaneGeometry(30, 20);
-            const bgMaterial = new THREE.ShaderMaterial({
-                uniforms: {
-                    time: { value: 0 },
-                    resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
-                },
-                vertexShader: document.getElementById('aurora-vs').textContent,
-                fragmentShader: document.getElementById('aurora-fs').textContent,
-                depthWrite: false
-            });
-            const background = new THREE.Mesh(bgGeometry, bgMaterial);
-            background.position.z = -5;
-            scene.add(background);
+  </div>
+</section>
 
-            // Card - The Masterpiece
-            const cardGroup = new THREE.Group();
-            scene.add(cardGroup);
+<div class="section-divider"></div>
 
-            const cardGeo = new THREE.BoxGeometry(2.5, 4.2, 0.08);
-            const cardMat = [
-                new THREE.MeshStandardMaterial({ color: 0x000000, metalness: 0.9, roughness: 0.1 }), // Sides
-                new THREE.MeshStandardMaterial({ color: 0x000000, metalness: 0.9, roughness: 0.1 }),
-                new THREE.MeshStandardMaterial({ color: 0x000000, metalness: 0.9, roughness: 0.1 }),
-                new THREE.MeshStandardMaterial({ color: 0x000000, metalness: 0.9, roughness: 0.1 }),
-                new THREE.MeshStandardMaterial({ 
-                    color: 0x050505, 
-                    emissive: 0x2d1b4e, 
-                    emissiveIntensity: 0.4,
-                    metalness: 1, 
-                    roughness: 0.2,
-                    transparent: true
-                }), // Front
-                new THREE.MeshStandardMaterial({ 
-                    color: 0x020202, 
-                    emissive: 0xc5a059, 
-                    emissiveIntensity: 0.15,
-                    metalness: 1, 
-                    roughness: 0.1,
-                    transparent: true
-                })  // Back
-            ];
-            const card = new THREE.Mesh(cardGeo, cardMat);
-            cardGroup.add(card);
+<!-- CTA -->
+<section id="cta">
+  <div class="cta-glow"></div>
+  <h2 class="cta-title reveal">加入内圆 · Join The Inner Circle</h2>
+  <p class="cta-sub reveal reveal-d1">宇宙的消息只送给准备好的灵魂<br>第一个知道新月抽牌活动的人</p>
+  <form class="email-form reveal reveal-d2" onsubmit="submitEmail(event)">
+    <input type="email" class="email-input" placeholder="your@email.com" id="email-input" required>
+    <button type="submit" class="email-btn">ENTER</button>
+  </form>
+  <p class="email-confirm" id="email-confirm">✦ 宇宙已记下你的名字 ✦</p>
+</section>
 
-            // Gold Edge Frame (The Alchemical Line)
-            const frameGeo = new THREE.BoxGeometry(2.55, 4.25, 0.09);
-            const frameMat = new THREE.MeshStandardMaterial({ 
-                color: 0xc5a059, 
-                metalness: 1, 
-                roughness: 0.1, 
-                emissive: 0xc5a059, 
-                emissiveIntensity: 0.2,
-                wireframe: true 
-            });
-            const frame = new THREE.Mesh(frameGeo, frameMat);
-            cardGroup.add(frame);
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">ARCANA</div>
+  <p class="footer-tagline">宇宙知道你今天来这里，不是巧合</p>
+  <ul class="footer-links">
+    <li><a href="#">隐私政策</a></li>
+    <li><a href="#">服务条款</a></li>
+    <li><a href="#">联系我们</a></li>
+  </ul>
+  <p class="footer-copy">© 2026 ARCANA · All rights reserved · 宇宙版权所有</p>
+</footer>
 
-            // Particle Field (Soul Fragments)
-            const pCount = 3000;
-            const pGeo = new THREE.BufferGeometry();
-            const pPos = new Float32Array(pCount * 3);
-            const pVel = new Float32Array(pCount * 3);
-            for(let i=0; i<pCount; i++) {
-                pPos[i*3] = (Math.random()-0.5)*2.5;
-                pPos[i*3+1] = (Math.random()-0.5)*4.2;
-                pPos[i*3+2] = (Math.random()-0.5)*0.1;
-                pVel[i*3] = (Math.random()-0.5)*0.01;
-                pVel[i*3+1] = (Math.random()-0.5)*0.01;
-                pVel[i*3+2] = Math.random()*0.02;
-            }
-            pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-            const pMat = new THREE.PointsMaterial({
-                color: 0xc5a059,
-                size: 0.015,
-                transparent: true,
-                opacity: 0,
-                blending: THREE.AdditiveBlending
-            });
-            const particles = new THREE.Points(pGeo, pMat);
-            scene.add(particles);
+<!-- THREE.JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- GSAP -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 
-            // Mouse Inertia Logic
-            let mouse = { x: 0, y: 0 };
-            let targetRotation = { x: 0, y: 0 };
-            window.addEventListener('mousemove', (e) => {
-                mouse.x = (e.clientX / window.innerWidth) - 0.5;
-                mouse.y = (e.clientY / window.innerHeight) - 0.5;
-            });
+<script>
+/* ══════════════════════════════════════
+   CUSTOM CURSOR
+   ══════════════════════════════════════ */
+const dot  = document.getElementById('cur-dot');
+const ring = document.getElementById('cur-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX;my=e.clientY;
+  dot.style.left=mx+'px';dot.style.top=my+'px';
+});
+(function animRing(){
+  rx+=(mx-rx)*.11; ry+=(my-ry)*.11;
+  ring.style.left=rx+'px'; ring.style.top=ry+'px';
+  requestAnimationFrame(animRing);
+})();
 
-            // Ritual States
-            let isInvoked = false;
-            let isAscended = false;
+/* ══════════════════════════════════════
+   LOADER
+   ══════════════════════════════════════ */
+window.addEventListener('load',()=>{
+  setTimeout(()=>document.getElementById('loader').classList.add('out'),2600);
+});
 
-            document.getElementById('flip-btn').addEventListener('click', () => {
-                isInvoked = !isInvoked;
-                gsap.to(cardGroup.rotation, {
-                    y: isInvoked ? Math.PI : 0,
-                    duration: 2.2,
-                    ease: "expo.inOut"
-                });
-                gsap.to(goldLight, { intensity: isInvoked ? 4 : 2, duration: 1 });
-                document.getElementById('flip-btn').innerText = isInvoked ? "Seal Fate" : "Invoke Fate";
-            });
+/* ══════════════════════════════════════
+   THREE.JS PARTICLE FIELD
+   ══════════════════════════════════════ */
+(function initThree(){
+  const canvas   = document.getElementById('bg-canvas');
+  const renderer = new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setSize(innerWidth,innerHeight);
 
-            document.getElementById('dissipate-btn').addEventListener('click', () => {
-                if(isAscended) return;
-                isAscended = true;
-                
-                // Hide Card
-                gsap.to(cardMat, { opacity: 0, duration: 1.5, stagger: 0.1 });
-                gsap.to(frameMat, { opacity: 0, duration: 1 });
-                
-                // Invoke Particles
-                gsap.to(pMat, { opacity: 0.8, duration: 0.5 });
-                
-                gsap.delayedCall(1.5, () => {
-                    gsap.to(pMat, { opacity: 0, duration: 3, ease: "power2.inOut", onComplete: () => {
-                        cardMat.forEach(m => m.opacity = 1);
-                        frameMat.opacity = 1;
-                        isAscended = false;
-                        isInvoked = false;
-                        cardGroup.rotation.y = 0;
-                        document.getElementById('flip-btn').innerText = "Invoke Fate";
-                    }});
-                });
-            });
+  const scene  = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.1,1000);
+  camera.position.z=6;
 
-            // Animation Loop
-            function animate(t) {
-                requestAnimationFrame(animate);
-                const time = t * 0.001;
-                
-                bgMaterial.uniforms.time.value = time;
-                
-                // Inertia & Heavy Floating
-                if(!isInvoked && !isAscended) {
-                    targetRotation.x += (mouse.y * 0.4 - targetRotation.x) * 0.05;
-                    targetRotation.y += (mouse.x * 0.4 - targetRotation.y) * 0.05;
-                    cardGroup.rotation.x = targetRotation.x + Math.sin(time) * 0.05;
-                    cardGroup.rotation.y = targetRotation.y + Math.cos(time * 0.5) * 0.05;
-                }
-                
-                if(isAscended) {
-                    const pos = pGeo.attributes.position.array;
-                    for(let i=0; i<pCount; i++) {
-                        pos[i*3] += pVel[i*3] * (1 + Math.sin(time));
-                        pos[i*3+1] += pVel[i*3+1] * (2 + Math.cos(time));
-                        pos[i*3+2] += pVel[i*3+2] * 5;
-                    }
-                    pGeo.attributes.position.needsUpdate = true;
-                }
+  /* ─ Stars ─ */
+  const N=2400;
+  const geo=new THREE.BufferGeometry();
+  const pos=new Float32Array(N*3);
+  const col=new Float32Array(N*3);
+  const sizes=new Float32Array(N);
+  for(let i=0;i<N;i++){
+    const i3=i*3;
+    pos[i3]  =(Math.random()-.5)*22;
+    pos[i3+1]=(Math.random()-.5)*22;
+    pos[i3+2]=(Math.random()-.5)*12-3;
+    const t=Math.random();
+    // gold ↔ violet gradient
+    col[i3]  =.784*t+.483*(1-t);
+    col[i3+1]=.663*t+.302*(1-t);
+    col[i3+2]=.431*t+1*(1-t);
+    sizes[i]=Math.random()*.6+.1;
+  }
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  geo.setAttribute('color',   new THREE.BufferAttribute(col,3));
+  geo.setAttribute('size',    new THREE.BufferAttribute(sizes,1));
 
-                renderer.render(scene, camera);
-            }
+  const mat=new THREE.PointsMaterial({
+    size:.03,vertexColors:true,transparent:true,opacity:.75,sizeAttenuation:true,
+  });
+  const stars=new THREE.Points(geo,mat);
+  scene.add(stars);
 
-            // Reveal Sequence
-            window.onload = () => {
-                gsap.to('#loader', { opacity: 0, duration: 2, delay: 1.5, onComplete: () => {
-                    document.getElementById('loader').style.display = 'none';
-                    gsap.to('#title', { opacity: 1, duration: 2, ease: "power4.out" });
-                    gsap.to('#controls', { opacity: 1, duration: 2, delay: 0.5 });
-                    animate(0);
-                }});
-            };
+  /* ─ Nebula plane ─ */
+  const nebGeo=new THREE.PlaneGeometry(20,20);
+  const nebMat=new THREE.MeshBasicMaterial({
+    color:0x7b4dff,transparent:true,opacity:.04,
+    blending:THREE.AdditiveBlending,depthWrite:false,
+  });
+  const neb=new THREE.Mesh(nebGeo,nebMat);
+  neb.position.z=-4;
+  scene.add(neb);
 
-            window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                bgMaterial.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
-            });
-        })();
-    </script>
+  /* ─ Mouse parallax ─ */
+  let tx=0,ty=0;
+  document.addEventListener('mousemove',e=>{
+    tx=(e.clientX/innerWidth-.5)*.6;
+    ty=(e.clientY/innerHeight-.5)*.6;
+  });
+
+  window.addEventListener('resize',()=>{
+    camera.aspect=innerWidth/innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth,innerHeight);
+  });
+
+  const clock=new THREE.Clock();
+  (function tick(){
+    requestAnimationFrame(tick);
+    const t=clock.getElapsedTime();
+    stars.rotation.y = t*.018 + tx*.25;
+    stars.rotation.x = ty*.2;
+    stars.rotation.z = t*.006;
+    renderer.render(scene,camera);
+  })();
+})();
+
+/* ══════════════════════════════════════
+   CARD HOLO EFFECT
+   ══════════════════════════════════════ */
+const card=document.getElementById('tarot-card');
+const holo=document.getElementById('holo');
+
+card.addEventListener('mousemove',e=>{
+  const r=card.getBoundingClientRect();
+  const cx=r.left+r.width/2, cy=r.top+r.height/2;
+  const dx=e.clientX-cx, dy=e.clientY-cy;
+  const rx_deg=(-dy/r.height*20).toFixed(2);
+  const ry_deg=( dx/r.width *20).toFixed(2);
+  const angle=Math.atan2(dy,dx)*(180/Math.PI);
+  card.style.transform=`rotateX(${rx_deg}deg) rotateY(${ry_deg}deg) translateY(0)`;
+  holo.style.setProperty('--ha',(angle+90)+'deg');
+  holo.style.filter=`hue-rotate(${(angle+180)*.1}deg) brightness(1.1)`;
+});
+card.addEventListener('mouseleave',()=>{
+  card.style.transform='';
+  holo.style.filter='';
+  holo.style.setProperty('--ha','135deg');
+});
+
+/* ══════════════════════════════════════
+   TAROT CARD DATA
+   ══════════════════════════════════════ */
+const CARDS=[
+  {name:'THE STAR · 星星',    symbol:'⭐', meaning:'希望之光穿透黑暗，宇宙在悄悄为你铺路。此刻的你，正处于更新与疗愈的门槛。信任过程，你的愿望比你以为的更近。',reversed:'过度理想化遮蔽了现实。先落地，再飞翔。'},
+  {name:'THE MOON · 月亮',    symbol:'🌙', meaning:'内心深处有什么在等待被看见。直觉是你此刻最可靠的罗盘，无需逻辑，只需倾听。黑暗中也有光。',reversed:'幻觉与现实的边界正在模糊。是时候面对那些你一直回避的真相。'},
+  {name:'THE SUN · 太阳',     symbol:'☀️', meaning:'丰盛与喜悦已在路上。你的光芒无需任何人的允许便可以绽放。这是一个充满生命力的时刻。',reversed:'喜悦被暂时遮蔽，但太阳从未真正消失。向内寻找那份温暖。'},
+  {name:'THE WORLD · 世界',   symbol:'🌍', meaning:'一个完整的循环正在画上句点。你已准备好进入下一个更宏大的自己。成就已至，接受它。',reversed:'仍有一些未完成的功课在等你。真正的完成需要你的诚实面对。'},
+  {name:'THE FOOL · 愚者',    symbol:'🃏', meaning:'带着初心出发。那些"没准备好"的时刻，往往是最正确的起点。宇宙会为你铺路。',reversed:'鲁莽与冲动在提醒你：停下来，深呼吸，再迈出那一步。'},
+  {name:'THE MAGICIAN · 魔法师',symbol:'🔮',meaning:'你拥有将想象变成现实的所有工具。此刻的关键是行动，而非等待。你就是那个奇迹。',reversed:'能量在内部循环却没有出口。是时候突破你自设的限制了。'},
+  {name:'THE HIGH PRIESTESS · 女祭司',symbol:'🌸',meaning:'答案不在外部。安静下来，让内在的智慧涌现。你比你以为的更了解前方的路。',reversed:'外部的噪音遮盖了内心的声音。给自己一些真正的安静时光。'},
+  {name:'THE EMPEROR · 皇帝', symbol:'👑', meaning:'建立秩序，掌握主动权。是时候以稳定的力量去实现你的目标了。你就是这里的主导者。',reversed:'控制欲超出边界，放手反而会带来更大的力量。'},
+  {name:'THE HERMIT · 隐士',  symbol:'🕯️', meaning:'独处是此刻的礼物而非惩罚。在向内凝视的安静中，你会找到别处找不到的智慧。',reversed:'过度的孤立在消耗你。适时走出来，与世界重新连接。'},
+  {name:'THE WHEEL · 命运之轮',symbol:'♾️',meaning:'变化正在发生，这正是你需要的。放下对结果的执念，随轮转而流动，好运的轮廓已在靠近。',reversed:'抗拒改变只会延长等待。接受流动，才是真正的力量。'},
+];
+
+/* ══════════════════════════════════════
+   DRAW CARD LOGIC
+   ══════════════════════════════════════ */
+let drawing=false;
+
+function drawCard(){
+  if(drawing) return;
+  drawing=true;
+  const btn=document.getElementById('draw-btn');
+  btn.disabled=true;
+  btn.textContent='宇宙感应中…';
+
+  // Shake animation
+  if(typeof gsap!=='undefined'){
+    gsap.to(card,{
+      x:'random(-8,8)',y:'random(-6,6)',
+      duration:.12,repeat:5,yoyo:true,ease:'power2.inOut',
+      onComplete:()=>{
+        gsap.set(card,{x:0,y:0});
+        flipAndReveal();
+      }
+    });
+  } else {
+    setTimeout(flipAndReveal,600);
+  }
+}
+
+function flipAndReveal(){
+  const c=CARDS[Math.floor(Math.random()*CARDS.length)];
+  const reversed=Math.random()>.5;
+
+  // Update face content
+  document.getElementById('cf-symbol').textContent=c.symbol;
+  document.getElementById('cf-name').textContent=c.name;
+  document.getElementById('cf-meaning').textContent=reversed?(c.reversed||c.meaning):c.meaning;
+
+  // Flip
+  card.classList.add('flipping');
+
+  // Card glow burst
+  const glow=document.querySelector('.card-glow');
+  if(typeof gsap!=='undefined'){
+    gsap.to(glow,{opacity:3,scale:3,duration:.4,ease:'power2.out',
+      onComplete:()=>gsap.to(glow,{opacity:1,scale:1,duration:.8,ease:'power2.out'})
+    });
+  }
+
+  // Show result
+  setTimeout(()=>{
+    document.getElementById('r-name').textContent=c.name;
+    document.getElementById('r-pos').textContent=reversed?'逆位 REVERSED':'正位 UPRIGHT';
+    document.getElementById('r-meaning').textContent=reversed?(c.reversed||c.meaning):c.meaning;
+
+    const ra=document.getElementById('result-area');
+    ra.style.display='block';
+    if(typeof gsap!=='undefined'){
+      gsap.fromTo(ra,{opacity:0,y:30},{opacity:1,y:0,duration:.9,ease:'power3.out'});
+    } else {
+      ra.style.opacity='1';
+    }
+
+    document.getElementById('draw-btn').style.display='none';
+    document.getElementById('reset-btn').style.display='inline-flex';
+    drawing=false;
+  },1000);
+}
+
+function resetCard(){
+  card.classList.remove('flipping');
+  document.getElementById('result-area').style.display='none';
+  document.getElementById('result-area').style.opacity='0';
+  document.getElementById('draw-btn').style.display='inline-flex';
+  document.getElementById('draw-btn').disabled=false;
+  document.getElementById('draw-btn').textContent='✦ 感应命运';
+  document.getElementById('reset-btn').style.display='none';
+  drawing=false;
+}
+
+/* ══════════════════════════════════════
+   BUTTON RIPPLE
+   ══════════════════════════════════════ */
+document.querySelectorAll('.btn').forEach(btn=>{
+  btn.addEventListener('click',e=>{
+    const r=btn.getBoundingClientRect();
+    const size=Math.max(r.width,r.height);
+    const rpl=document.createElement('span');
+    rpl.className='ripple';
+    rpl.style.cssText=`width:${size}px;height:${size}px;left:${e.clientX-r.left-size/2}px;top:${e.clientY-r.top-size/2}px`;
+    btn.appendChild(rpl);
+    setTimeout(()=>rpl.remove(),700);
+  });
+});
+
+/* ══════════════════════════════════════
+   PRICING CARD MOUSE GLOW
+   ══════════════════════════════════════ */
+document.querySelectorAll('.pricing-card').forEach(c=>{
+  c.addEventListener('mousemove',e=>{
+    const r=c.getBoundingClientRect();
+    c.style.setProperty('--mx',((e.clientX-r.left)/r.width*100).toFixed(1)+'%');
+    c.style.setProperty('--my',((e.clientY-r.top)/r.height*100).toFixed(1)+'%');
+  });
+});
+
+/* ══════════════════════════════════════
+   NAV SCROLL STATE
+   ══════════════════════════════════════ */
+window.addEventListener('scroll',()=>{
+  document.getElementById('main-nav').classList.toggle('scrolled',scrollY>50);
+},{passive:true});
+
+/* ══════════════════════════════════════
+   INTERSECTION OBSERVER
+   ══════════════════════════════════════ */
+const ro=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');ro.unobserve(e.target)}});
+},{threshold:.12,rootMargin:'0px 0px -30px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
+
+/* ══════════════════════════════════════
+   GSAP SCROLL ANIMATIONS
+   ══════════════════════════════════════ */
+if(typeof gsap!=='undefined'&&typeof ScrollTrigger!=='undefined'){
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Pricing cards stagger
+  gsap.from('.pricing-card',{
+    y:60,opacity:0,duration:.9,stagger:.15,ease:'power3.out',
+    scrollTrigger:{trigger:'#pricing',start:'top 80%',toggleActions:'play none none none'}
+  });
+
+  // Pricing title
+  gsap.from('.pricing-title',{
+    y:40,opacity:0,duration:1,ease:'power3.out',
+    scrollTrigger:{trigger:'#pricing',start:'top 85%'}
+  });
+  gsap.from('.pricing-eyebrow',{
+    y:20,opacity:0,duration:.8,ease:'power3.out',
+    scrollTrigger:{trigger:'#pricing',start:'top 88%'}
+  });
+
+  // CTA
+  gsap.from('.cta-title',{
+    y:30,opacity:0,duration:.9,ease:'power3.out',
+    scrollTrigger:{trigger:'#cta',start:'top 85%'}
+  });
+}
+
+/* ══════════════════════════════════════
+   EMAIL FORM
+   ══════════════════════════════════════ */
+function submitEmail(e){
+  e.preventDefault();
+  const el=document.getElementById('email-confirm');
+  el.style.display='block';
+  document.querySelector('.email-form').style.display='none';
+}
+</script>
 </body>
 </html>
-
