@@ -1,372 +1,418 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARCANA V3 | Divine Convergence</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Serif+SC:wght@300;700&display=swap" rel="stylesheet">
+    <title>ARCANA v3.1 | 万象归一 · 数字圣殿</title>
+    <meta name="description" content="融合东西方神秘学的顶级数字交互体验。手撕命运，感应乾坤。">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Noto+Serif+SC:wght@200;500;900&family=Cormorant+Garamond:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
     <style>
         :root {
-            --gold: #c5a059;
-            --obsidian: #020202;
-            --blood: #4a0404;
+            --gold: #c9a96e;
+            --obsidian: #05040a;
+            --purple: #1a0b2e;
+            --glass: rgba(255, 255, 255, 0.02);
+            --border: rgba(201, 169, 110, 0.2);
+            --font-main: 'Noto Serif SC', serif;
+            --font-ritual: 'Cinzel Decorative', serif;
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body, html {
-            margin: 0; padding: 0;
             width: 100%; height: 100%;
-            background: var(--obsidian);
-            color: white;
-            font-family: 'Cinzel', 'Noto Serif SC', serif;
+            background-color: var(--obsidian);
+            color: #f0ece4;
+            font-family: var(--font-main);
             overflow: hidden;
             cursor: none;
+            user-select: none;
         }
+
+        /* ── FILM GRAIN & AMBIENCE ── */
+        body::after {
+            content: "";
+            position: fixed; inset: 0;
+            background-image: url("https://www.transparenttextures.com/patterns/stardust.png");
+            opacity: 0.05; pointer-events: none; z-index: 9999;
+        }
+
         #ritual-canvas {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            position: fixed; inset: 0;
             z-index: 1;
         }
-        
-        /* Alchemical Pointer */
-        #cursor {
-            position: fixed;
-            width: 30px; height: 30px;
-            border: 0.5px solid var(--gold);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 1000;
+
+        /* ── SUPREME CURSOR ── */
+        #cursor-eye {
+            position: fixed; width: 40px; height: 40px;
+            border: 0.5px solid var(--gold); border-radius: 50%;
+            pointer-events: none; z-index: 10000;
             transform: translate(-50%, -50%);
-            transition: width 0.3s, height 0.3s, border-color 0.3s;
+            transition: width 0.4s, height 0.4s, background 0.3s;
+            display: flex; align-items: center; justify-content: center;
         }
-        #cursor-dot {
-            position: fixed;
-            width: 4px; height: 4px;
-            background: var(--gold);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 1000;
+        #cursor-eye::after {
+            content: "✦"; color: var(--gold); font-size: 10px;
+        }
+        #cursor-glow {
+            position: fixed; width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(201, 169, 110, 0.08) 0%, transparent 70%);
+            pointer-events: none; z-index: 9998;
             transform: translate(-50%, -50%);
         }
 
-        /* Narrative Layers */
-        .narrative {
-            position: fixed;
-            z-index: 100;
-            width: 100%;
-            text-align: center;
-            pointer-events: none;
-        }
-        .slide-up {
-            bottom: 15%;
-            font-size: 1.5rem;
-            letter-spacing: 0.8rem;
-            color: var(--gold);
-            opacity: 0;
-            transform: translateY(50px);
-        }
-        .side-title {
-            left: 3%; top: 50%;
-            position: fixed;
-            writing-mode: vertical-rl;
-            font-size: 0.7rem;
-            letter-spacing: 1.5rem;
-            color: rgba(197, 160, 89, 0.4);
-            transform: translateY(-50%);
+        /* ── UI LAYERS ── */
+        .ui-layer {
+            position: fixed; inset: 0;
+            pointer-events: none; z-index: 100;
+            display: flex; flex-direction: column;
+            justify-content: space-between;
+            padding: 40px;
         }
 
-        /* Interaction UI */
-        .ritual-ui {
-            position: absolute;
-            z-index: 50;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            align-items: center;
-            padding-bottom: 5vh;
-            pointer-events: none;
+        /* Header: Wannianli & Brand */
+        .header {
+            display: flex; justify-content: space-between; align-items: flex-start;
         }
-        
-        .mode-selector {
+        .brand {
+            font-family: var(--font-ritual); font-size: 1.5rem; letter-spacing: 0.4em; color: var(--gold);
+            text-shadow: 0 0 20px rgba(201, 169, 110, 0.5);
+        }
+        .wannianli {
+            text-align: right; font-size: 0.7rem; letter-spacing: 0.2em; line-height: 2;
+            color: rgba(240, 236, 228, 0.6);
+        }
+
+        /* Side: Metaphysics Labels */
+        .side-labels {
+            position: fixed; left: 40px; top: 50%; transform: translateY(-50%);
+            writing-mode: vertical-rl; font-size: 0.6rem; letter-spacing: 1.5em;
+            color: rgba(201, 169, 110, 0.3); text-transform: uppercase;
+        }
+
+        /* Footer: Ritual Controls */
+        .footer {
+            display: flex; flex-direction: column; align-items: center; gap: 30px;
             pointer-events: auto;
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-            opacity: 0;
+        }
+        .ritual-title {
+            font-family: var(--font-ritual); font-size: 1.2rem; letter-spacing: 1em;
+            color: var(--gold); opacity: 0.8;
+        }
+
+        .interaction-modes {
+            display: flex; gap: 40px;
         }
         .mode-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 0.5px solid var(--gold);
-            color: var(--gold);
-            padding: 10px 25px;
-            font-size: 0.6rem;
-            letter-spacing: 0.3rem;
-            cursor: pointer;
-            transition: all 0.3s;
+            background: none; border: none; color: rgba(201, 169, 110, 0.4);
+            font-family: var(--font-ritual); font-size: 0.7rem; letter-spacing: 0.3em;
+            cursor: pointer; position: relative; padding: 10px 0;
+            transition: color 0.4s;
         }
-        .mode-btn.active {
-            background: var(--gold);
-            color: var(--obsidian);
+        .mode-btn.active { color: var(--gold); }
+        .mode-btn.active::after {
+            content: ""; position: absolute; bottom: 0; left: 0; width: 100%; height: 1px;
+            background: var(--gold); box-shadow: 0 0 10px var(--gold);
         }
 
-        .status-msg {
-            font-size: 0.7rem;
-            letter-spacing: 0.5rem;
-            color: var(--gold);
-            text-transform: uppercase;
+        /* ── REVEAL CONTENT ── */
+        #reveal-area {
+            position: fixed; inset: 0; z-index: 200;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            background: radial-gradient(circle, rgba(26, 11, 46, 0.9) 0%, rgba(5, 4, 10, 0.98) 100%);
+            opacity: 0; transition: opacity 1.5s ease;
+            pointer-events: auto;
+        }
+        .card-name {
+            font-family: var(--font-ritual); font-size: 3rem; margin-bottom: 20px;
+            background: linear-gradient(to bottom, #fff, var(--gold));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .card-meaning {
+            max-width: 600px; text-align: center; line-height: 2; font-weight: 200;
+            letter-spacing: 0.1em; color: rgba(240, 236, 228, 0.8);
         }
 
-        /* Elements Symbols */
-        .element-symbol {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 15px;
-            z-index: 100;
-            opacity: 0.3;
+        /* ── LOADER ── */
+        #supreme-loader {
+            position: fixed; inset: 0; z-index: 10000;
+            background: var(--obsidian);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        .elem { font-size: 12px; color: var(--gold); }
+        .loader-ring {
+            width: 120px; height: 120px; border: 0.5px solid var(--border); border-radius: 50%;
+            position: relative; animation: spin 10s linear infinite;
+        }
+        .loader-ring::after {
+            content: "乾坤"; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+            background: var(--obsidian); padding: 0 10px; font-size: 10px; color: var(--gold);
+        }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /* Loader */
-        .loader-v3 {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
+        /* ── UTILS ── */
+        .glitch-text { animation: glitch 5s infinite; }
+        @keyframes glitch {
+            0% { text-shadow: 2px 0 0 rgba(255,0,0,0.2), -2px 0 0 rgba(0,255,255,0.2); }
+            1% { text-shadow: -2px 0 0 rgba(255,0,0,0.2), 2px 0 0 rgba(0,255,255,0.2); }
+            2% { text-shadow: 0 0 0 transparent; }
         }
-        .yin-yang-loader {
-            width: 80px; height: 80px;
-            background: linear-gradient(to right, white 50%, black 50%);
-            border-radius: 50%;
-            animation: spin 5s linear infinite;
-            position: relative;
-        }
-        .yin-yang-loader::before, .yin-yang-loader::after {
-            content: '';
-            position: absolute;
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-        .yin-yang-loader::before { top: 0; background: white; }
-        .yin-yang-loader::after { bottom: 0; background: black; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <div id="cursor"></div>
-    <div id="cursor-dot"></div>
 
-    <div class="loader-v3" id="loader">
-        <div class="yin-yang-loader"></div>
-        <div style="margin-top: 40px; letter-spacing: 1.2rem; color: var(--gold);">万象归一</div>
+    <div id="cursor-eye"></div>
+    <div id="cursor-glow"></div>
+
+    <div id="supreme-loader">
+        <div class="loader-ring"></div>
+        <div style="margin-top: 50px; font-family: var(--font-ritual); letter-spacing: 1.5em; color: var(--gold);">ARCANA</div>
+        <div style="margin-top: 15px; font-size: 0.6rem; letter-spacing: 0.8em; color: rgba(197, 160, 89, 0.5);">万象归一 · 此时此刻</div>
     </div>
 
     <canvas id="ritual-canvas"></canvas>
 
-    <div class="side-title">ARCANA | DIVINE CONVERGENCE</div>
-
-    <div class="narrative">
-        <div id="subtitle" class="slide-up">乾坤既定，五行流转</div>
-    </div>
-
-    <div class="ritual-ui">
-        <div class="mode-selector" id="mode-selector">
-            <button class="mode-btn active" data-mode="tear">Tear / 撕</button>
-            <button class="mode-btn" data-mode="cut">Cut / 剪</button>
-            <button class="mode-btn" data-mode="open">Open / 启</button>
+    <div class="ui-layer">
+        <div class="header">
+            <div class="brand">ARCANA</div>
+            <div class="wannianli">
+                <div id="date-shichen">丙子年 · 庚寅月 · 壬午日</div>
+                <div id="hexagram-day">【地火明夷】 · 宜内敛</div>
+            </div>
         </div>
-        <div class="status-msg" id="status">Hold to interact / 长按感应</div>
+
+        <div class="side-labels">
+            WESTERN TAROT ✦ CHINESE METAPHYSICS ✦ DIVINE CONVERGENCE
+        </div>
+
+        <div class="footer">
+            <div class="ritual-title">进入仪式 · SELECT YOUR RITUAL</div>
+            <div class="interaction-modes">
+                <button class="mode-btn active" onclick="switchMode('tear', this)">HAND TEAR / 手撕</button>
+                <button class="mode-btn" onclick="switchMode('cut', this)">SCISSORS / 剪断</button>
+                <button class="mode-btn" onclick="switchMode('open', this)">SACRED BOX / 启合</button>
+            </div>
+            <div style="font-size: 0.6rem; letter-spacing: 0.5em; color: rgba(201, 169, 110, 0.5);">LONG PRESS TO BEGIN / 长按开始仪式</div>
+        </div>
     </div>
 
-    <div class="element-symbol">
-        <div class="elem">金</div>
-        <div class="elem">木</div>
-        <div class="elem">水</div>
-        <div class="elem">火</div>
-        <div class="elem">土</div>
+    <div id="reveal-area">
+        <div style="font-family: var(--font-ritual); font-size: 0.8rem; letter-spacing: 1.2em; color: var(--gold); margin-bottom: 40px;">THE ORACLE REVEALED</div>
+        <div class="card-name" id="res-name">THE WORLD</div>
+        <div class="card-meaning" id="res-meaning">
+            万物归位，圆满终焉。你所寻求的答案早已在你心中，
+            此时此刻，乾坤合德，五行平衡。
+        </div>
+        <button class="mode-btn" style="margin-top: 60px; color: #fff; border-color: #fff;" onclick="location.reload()">再入轮回 / RETURN</button>
     </div>
 
-    <!-- Libraries -->
+    <!-- ── LIBRARIES ── -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
 
     <script>
-        // --- ARCANA V3: DIVINE CONVERGENCE ENGINE ---
-        (function() {
-            const canvas = document.getElementById('ritual-canvas');
-            const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+        // --- ARCANA v3.1 SUPREME ENGINE ---
+        
+        const config = {
+            colors: {
+                gold: 0xc9a96e,
+                obsidian: 0x05040a,
+                purple: 0x1a0b2e,
+                white: 0xf0ece4
+            }
+        };
+
+        let scene, camera, renderer, world;
+        let card, bag, box, lid, baguaRing;
+        let particles, pGeometry;
+        let currentMode = 'tear';
+        let interactionActive = false;
+        let progress = 0;
+        let mouse = { x: 0, y: 0 };
+
+        function init() {
+            // Scene & Renderer
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ 
+                canvas: document.getElementById('ritual-canvas'), 
+                antialias: true, alpha: true 
+            });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
 
-            // Immersive Lighting
+            camera.position.z = 12;
+
+            // Physics
+            world = new CANNON.World();
+            world.gravity.set(0, -9.82, 0);
+
+            // Lights
             const ambient = new THREE.AmbientLight(0xffffff, 0.1);
             scene.add(ambient);
 
-            const pointerLight = new THREE.PointLight(0xc5a059, 4, 15);
-            scene.add(pointerLight);
+            const spot = new THREE.SpotLight(config.colors.gold, 5);
+            spot.position.set(5, 10, 5);
+            spot.castShadow = true;
+            spot.shadow.mapSize.width = 2048;
+            spot.shadow.mapSize.height = 2048;
+            scene.add(spot);
 
-            // 1. The Altar of Elements
-            const altarGeo = new THREE.TorusGeometry(6, 0.05, 16, 100);
-            const altarMat = new THREE.MeshStandardMaterial({ color: 0xc5a059, emissive: 0xc5a059, emissiveIntensity: 0.5 });
-            const altarRing = new THREE.Mesh(altarGeo, altarMat);
-            altarRing.rotation.x = Math.PI / 2;
-            altarRing.position.y = -2;
-            scene.add(altarRing);
+            // Alchemical Pointer Light
+            const pLight = new THREE.PointLight(config.colors.gold, 2, 20);
+            scene.add(pLight);
+            window.pLight = pLight;
 
-            // 2. The Interaction Target (The Bag / Box)
-            const targetGroup = new THREE.Group();
-            scene.add(targetGroup);
+            // ── 3D ASSETS ──
 
-            // The Silk Bag (Mesh for Tearing)
-            const bagGeo = new THREE.PlaneGeometry(3, 4, 64, 64);
-            const bagMat = new THREE.MeshStandardMaterial({ 
-                color: 0x050505, 
-                side: THREE.DoubleSide,
-                emissive: 0x2d1b4e,
-                emissiveIntensity: 0.3,
-                transparent: true
+            // 1. Bagua Ring (The Background Oracle)
+            const ringGeo = new THREE.TorusGeometry(5, 0.02, 16, 100);
+            const ringMat = new THREE.MeshStandardMaterial({ 
+                color: config.colors.gold, emissive: config.colors.gold, emissiveIntensity: 1 
             });
-            const bag = new THREE.Mesh(bagGeo, bagMat);
-            targetGroup.add(bag);
+            baguaRing = new THREE.Mesh(ringGeo, ringMat);
+            baguaRing.rotation.x = Math.PI / 2;
+            baguaRing.position.y = -1;
+            scene.add(baguaRing);
 
-            // The Lacquer Box (For Opening)
-            const boxGeo = new THREE.BoxGeometry(3.2, 1, 4.5);
-            const boxMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.1, metalness: 0.9 });
-            const boxBase = new THREE.Mesh(boxGeo, boxMat);
-            boxBase.position.y = -1.5;
-            boxBase.visible = false;
-            scene.add(boxBase);
+            // 2. The Silk Bag (Mesh Manipulation)
+            const bagGeo = new THREE.PlaneGeometry(3.5, 5, 128, 128);
+            const bagMat = new THREE.MeshStandardMaterial({ 
+                color: 0x080808, side: THREE.DoubleSide, roughness: 0.8,
+                emissive: 0x110820, emissiveIntensity: 0.5
+            });
+            bag = new THREE.Mesh(bagGeo, bagMat);
+            bag.position.y = 1;
+            scene.add(bag);
 
-            const lidGeo = new THREE.BoxGeometry(3.2, 0.2, 4.5);
-            const lid = new THREE.Mesh(lidGeo, boxMat);
-            lid.position.set(0, -1, 0);
-            lid.visible = false;
-            scene.add(lid);
+            // 3. The Ritual Card (Hidden)
+            const cardGeo = new THREE.BoxGeometry(2.5, 4, 0.05);
+            const cardMat = [
+                new THREE.MeshStandardMaterial({ color: 0x000 }), // edge
+                new THREE.MeshStandardMaterial({ color: 0x000 }), // edge
+                new THREE.MeshStandardMaterial({ color: 0x000 }), // edge
+                new THREE.MeshStandardMaterial({ color: 0x000 }), // edge
+                new THREE.MeshStandardMaterial({ color: 0x111, emissive: config.colors.gold, emissiveIntensity: 0.2 }), // front
+                new THREE.MeshStandardMaterial({ color: 0x050505 }) // back
+            ];
+            card = new THREE.Mesh(cardGeo, cardMat);
+            card.position.y = 1;
+            card.visible = false;
+            scene.add(card);
 
-            // 3. Elements Particles
-            const pCount = 2000;
-            const pGeo = new THREE.BufferGeometry();
-            const pPos = new Float32Array(pCount * 3);
-            const pColors = new Float32Array(pCount * 3);
+            // 4. Particles (The Ether)
+            const pCount = 3000;
+            pGeometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(pCount * 3);
             for(let i=0; i<pCount; i++) {
-                pPos[i*3] = (Math.random()-0.5)*20;
-                pPos[i*3+1] = (Math.random()-0.5)*20;
-                pPos[i*3+2] = (Math.random()-0.5)*20;
+                positions[i*3] = (Math.random()-0.5)*30;
+                positions[i*3+1] = (Math.random()-0.5)*30;
+                positions[i*3+2] = (Math.random()-0.5)*30;
             }
-            pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-            const pMat = new THREE.PointsMaterial({ size: 0.02, vertexColors: true, transparent: true, opacity: 0.4 });
-            const particles = new THREE.Points(pGeo, pMat);
+            pGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            particles = new THREE.Points(pGeometry, new THREE.PointsMaterial({ 
+                color: config.colors.gold, size: 0.015, transparent: true, opacity: 0.3 
+            }));
             scene.add(particles);
 
-            // 4. Interaction Logic
-            let mouse = new THREE.Vector2();
-            let isDown = false;
-            let currentMode = 'tear';
-            let interactionProgress = 0;
+            // Handlers
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mousedown', () => interactionActive = true);
+            window.addEventListener('mouseup', () => interactionActive = false);
+            window.addEventListener('resize', onWindowResize);
 
-            const cursor = document.getElementById('cursor');
-            const cursorDot = document.getElementById('cursor-dot');
+            // Start
+            setTimeout(() => {
+                gsap.to('#supreme-loader', { opacity: 0, duration: 2, onComplete: () => {
+                    document.getElementById('supreme-loader').style.display = 'none';
+                    animate();
+                }});
+            }, 2500);
+        }
 
-            window.addEventListener('mousemove', (e) => {
-                mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-                mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+        function onMouseMove(e) {
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            
+            gsap.to('#cursor-eye', { left: e.clientX, top: e.clientY, duration: 0.1 });
+            gsap.to('#cursor-glow', { left: e.clientX, top: e.clientY, duration: 0.4 });
+            
+            pLight.position.x = mouse.x * 6;
+            pLight.position.y = mouse.y * 6;
+            pLight.position.z = 4;
+        }
+
+        function switchMode(mode, btn) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            progress = 0;
+            // Reset bag mesh
+            const pos = bag.geometry.attributes.position;
+            for(let i=0; i<pos.count; i++) pos.setX(i, pos.getX(i)); // placeholder for real reset
+            pos.needsUpdate = true;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // 3D Perspective Rotation
+            camera.position.x += (mouse.x * 4 - camera.position.x) * 0.03;
+            camera.position.y += (mouse.y * 4 - camera.position.y) * 0.03;
+            camera.lookAt(0, 0, 0);
+
+            baguaRing.rotation.z += 0.005;
+            particles.rotation.y += 0.0005;
+
+            // Interaction Logic
+            if(interactionActive && progress < 100) {
+                progress += 0.4;
                 
-                cursor.style.left = e.clientX + 'px';
-                cursor.style.top = e.clientY + 'px';
-                cursorDot.style.left = e.clientX + 'px';
-                cursorDot.style.top = e.clientY + 'px';
-
-                gsap.to(pointerLight.position, { x: mouse.x * 5, y: mouse.y * 5, z: 4, duration: 0.6 });
-            });
-
-            window.addEventListener('mousedown', () => {
-                isDown = true;
-                gsap.to(cursor, { scale: 1.5, borderColor: '#ff0000', duration: 0.3 });
-            });
-            window.addEventListener('mouseup', () => {
-                isDown = false;
-                gsap.to(cursor, { scale: 1, borderColor: '#c5a059', duration: 0.3 });
-            });
-
-            // Mode Switching
-            document.querySelectorAll('.mode-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelector('.mode-btn.active').classList.remove('active');
-                    btn.classList.add('active');
-                    currentMode = btn.dataset.mode;
-                    resetRitual();
-                });
-            });
-
-            function resetRitual() {
-                interactionProgress = 0;
-                bag.visible = (currentMode === 'tear' || currentMode === 'cut');
-                boxBase.visible = (currentMode === 'open');
-                lid.visible = (currentMode === 'open');
-                // Reset geometries
-            }
-
-            // 5. Physics & Ritual Rendering
-            function animate(t) {
-                requestAnimationFrame(animate);
-                const time = t * 0.001;
-
-                // 3D Tilt & Panoramic View
-                camera.position.x += (mouse.x * 3 - camera.position.x) * 0.05;
-                camera.position.y += (mouse.y * 3 - camera.position.y) * 0.05;
-                camera.lookAt(0, 0, 0);
-
-                // Mode-Specific Ritual Logic
-                if(isDown) {
-                    if(currentMode === 'tear') {
-                        const pos = bag.geometry.attributes.position;
-                        for(let i=0; i<pos.count; i++) {
-                            const x = pos.getX(i);
-                            if(Math.abs(x) < 0.2) {
-                                pos.setX(i, x + (x > 0 ? 0.08 : -0.08));
-                            }
+                if(currentMode === 'tear') {
+                    const pos = bag.geometry.attributes.position;
+                    const center = 0;
+                    for(let i=0; i<pos.count; i++) {
+                        const px = pos.getX(i);
+                        const py = pos.getY(i);
+                        if(Math.abs(px - center) < 0.3 && py > 0) {
+                            pos.setX(i, px + (px > center ? 0.05 : -0.05));
+                            pos.setZ(i, pos.getZ(i) + 0.02);
                         }
-                        pos.needsUpdate = true;
-                        interactionProgress += 0.01;
-                    } else if(currentMode === 'open') {
-                        lid.position.y += 0.05;
-                        lid.rotation.x += 0.02;
-                        interactionProgress += 0.02;
                     }
-                    
-                    if(interactionProgress >= 1.5) triggerReveal();
+                    pos.needsUpdate = true;
                 }
-
-                // Elements Flow (Particles)
-                particles.rotation.y += 0.001;
-                altarRing.rotation.z += 0.01;
-
-                renderer.render(scene, camera);
-            }
-
-            function triggerReveal() {
-                isDown = false;
-                gsap.to('#subtitle', { opacity: 1, y: 0, duration: 2 });
-                // Reveal Card with Bagua/Five Elements Logic
-            }
-
-            // Initial Reveal
-            window.onload = () => {
-                setTimeout(() => {
-                    gsap.to('#loader', { opacity: 0, duration: 2, onComplete: () => {
-                        document.getElementById('loader').style.display = 'none';
-                        gsap.to('#mode-selector', { opacity: 1, duration: 1 });
-                        animate(0);
-                    }});
                 
+                if(progress >= 100) triggerReveal();
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function triggerReveal() {
+            interactionActive = false;
+            gsap.to(bag.material, { opacity: 0, duration: 1, onComplete: () => bag.visible = false });
+            
+            card.visible = true;
+            gsap.from(card.position, { y: -5, duration: 1.5, ease: "expo.out" });
+            gsap.to(card.rotation, { y: Math.PI, duration: 2, delay: 0.5, ease: "back.inOut(1.7)", onComplete: showFinalUI });
+        }
+
+        function showFinalUI() {
+            const el = document.getElementById('reveal-area');
+            el.style.display = 'flex';
+            setTimeout(() => el.style.opacity = '1', 10);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        init();
+
+    </script>
+</body>
+</html>
