@@ -6,79 +6,207 @@
     <title>ARCANA | The Digital Alchemist's Altar</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400&display=swap" rel="stylesheet">
     <style>
         :root {
             --color-obsidian: #050505;
             --color-ethereal-gold: #c5a059;
             --color-mystic-purple: #2d1b4e;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(197, 160, 89, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
         }
 
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
-            height: 100%;
             background-color: var(--color-obsidian);
             color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, .cinzel {
             font-family: 'Cinzel', serif;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
         }
 
         #canvas-container {
-            width: 100%;
-            height: 100%;
-            position: absolute;
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
             z-index: 1;
+            pointer-events: none;
         }
 
-        .ui-overlay {
+        /* Sections */
+        section {
             position: relative;
             z-index: 10;
-            text-align: center;
-            pointer-events: none;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            height: 80vh;
-            width: 100%;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            text-align: center;
         }
 
         h1 {
-            font-size: 3rem;
-            letter-spacing: 0.5em;
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
             color: var(--color-ethereal-gold);
-            margin-top: 50px;
+            margin: 0;
             opacity: 0;
+            transform: translateY(30px);
+            text-shadow: 0 0 30px rgba(197, 160, 89, 0.3);
         }
 
-        .controls {
-            margin-bottom: 50px;
+        .hero-controls {
+            margin-top: 60px;
+            display: flex;
+            gap: 20px;
             pointer-events: auto;
         }
 
-        button {
+        /* Pricing Section */
+        .pricing {
+            background: linear-gradient(to bottom, transparent, rgba(5, 5, 5, 0.8));
+            backdrop-filter: blur(5px);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            color: var(--color-ethereal-gold);
+            margin-bottom: 60px;
+            text-align: center;
+        }
+
+        .price-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .price-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(15px);
+            padding: 50px 30px;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .price-card:hover {
+            border-color: var(--color-ethereal-gold);
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .price-card.featured {
+            border-color: var(--color-ethereal-gold);
+            background: rgba(197, 160, 89, 0.05);
+        }
+
+        .tier-name {
+            font-size: 0.9rem;
+            color: var(--color-ethereal-gold);
+            margin-bottom: 10px;
+        }
+
+        .tier-price {
+            font-size: 3rem;
+            margin-bottom: 30px;
+            font-family: 'Cinzel', serif;
+        }
+
+        .tier-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 40px 0;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            line-height: 2;
+        }
+
+        /* Lead Magnet Footer */
+        .footer {
+            min-height: 60vh;
+            background: #000;
+            text-align: center;
+        }
+
+        .newsletter-box {
+            max-width: 500px;
+            width: 100%;
+        }
+
+        input[type="email"] {
+            width: 100%;
             background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(197, 160, 89, 0.3);
+            border: 1px solid var(--glass-border);
+            padding: 15px 20px;
+            color: #fff;
+            margin-bottom: 20px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="email"]:focus {
+            border-color: var(--color-ethereal-gold);
+        }
+
+        /* Buttons */
+        .btn {
+            background: transparent;
+            border: 1px solid var(--glass-border);
             color: var(--color-ethereal-gold);
             padding: 15px 40px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             letter-spacing: 0.3em;
             text-transform: uppercase;
             cursor: pointer;
             transition: all 0.5s ease;
-            margin: 0 10px;
+            text-decoration: none;
+            display: inline-block;
         }
 
-        button:hover {
+        .btn:hover {
             background: rgba(197, 160, 89, 0.1);
             border-color: var(--color-ethereal-gold);
             box-shadow: 0 0 20px rgba(197, 160, 89, 0.2);
         }
 
+        .btn-primary {
+            background: var(--color-ethereal-gold);
+            color: var(--color-obsidian);
+            font-weight: 700;
+        }
+
+        .btn-primary:hover {
+            background: #e0bc75;
+            color: var(--color-obsidian);
+        }
+
+        /* Loader */
         .loader {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -86,7 +214,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 100;
+            z-index: 1000;
             transition: opacity 1s ease;
         }
 
@@ -106,6 +234,11 @@
             0%, 100% { opacity: 0.3; }
             50% { opacity: 0.8; }
         }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 3rem; }
+            .price-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -115,13 +248,71 @@
 
     <div id="canvas-container"></div>
 
-    <div class="ui-overlay">
+    <section class="hero">
         <h1 id="main-title">ARCANA</h1>
-        <div class="controls">
-            <button id="flip-btn">Reveal Fate</button>
-            <button id="dissipate-btn">Dissipate</button>
+        <div class="hero-controls">
+            <button class="btn" id="flip-btn">Reveal Fate</button>
+            <button class="btn" id="dissipate-btn">Dissipate</button>
         </div>
-    </div>
+    </section>
+
+    <section class="pricing">
+        <h2 class="section-title">CHOOSE YOUR RITUAL</h2>
+        <div class="price-grid">
+            <!-- Tier 1 -->
+            <div class="price-card">
+                <div>
+                    <div class="tier-name">The Seeker</div>
+                    <div class="tier-price">$0</div>
+                    <ul class="tier-features">
+                        <li>One Daily Card Pull</li>
+                        <li>Basic Arcana Meaning</li>
+                        <li>Digital Altar Access</li>
+                    </ul>
+                </div>
+                <button class="btn">Begin Free</button>
+            </div>
+
+            <!-- Tier 2 -->
+            <div class="price-card featured">
+                <div>
+                    <div class="tier-name">The Alchemist</div>
+                    <div class="tier-price">$19.99</div>
+                    <ul class="tier-features">
+                        <li>Full Celtic Cross Spread</li>
+                        <li>AI Deep-Soul Analysis</li>
+                        <li>Downloadable PDF Ritual</li>
+                    </ul>
+                </div>
+                <button class="btn btn-primary">Start Journey</button>
+            </div>
+
+            <!-- Tier 3 -->
+            <div class="price-card">
+                <div>
+                    <div class="tier-name">The Master</div>
+                    <div class="tier-price">$299</div>
+                    <ul class="tier-features">
+                        <li>1:1 Visionary Session</li>
+                        <li>Lifetime Ritual Updates</li>
+                        <li>Physical Gold-Foil Deck</li>
+                    </ul>
+                </div>
+                <button class="btn">Book Master</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="footer">
+        <div class="newsletter-box">
+            <h2 class="cinzel" style="color: var(--color-ethereal-gold); margin-bottom: 20px;">Join The Inner Circle</h2>
+            <p style="color: rgba(255,255,255,0.5); margin-bottom: 40px; font-size: 0.9rem;">Be the first to receive lunar phase updates and exclusive ritual access.</p>
+            <form id="lead-magnet">
+                <input type="email" placeholder="YOUR EMAIL ADDRESS" required>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Grant Access</button>
+            </form>
+        </div>
+    </section>
 
     <script>
         // Three.js Scene Setup
@@ -161,7 +352,7 @@
         scene.add(card);
 
         // Particle System
-        const particleCount = 1500;
+        const particleCount = 2000;
         const particleGeometry = new THREE.BufferGeometry();
         const positions = new Float32Array(particleCount * 3);
         const velocities = new Float32Array(particleCount * 3);
@@ -179,7 +370,7 @@
         particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         const particleMaterial = new THREE.PointsMaterial({
             color: 0xc5a059,
-            size: 0.03,
+            size: 0.025,
             transparent: true,
             opacity: 0,
             blending: THREE.AdditiveBlending
@@ -212,10 +403,8 @@
             if (isDissipated) return;
             isDissipated = true;
             
-            // Fade out card
             gsap.to(card.material, { opacity: 0, duration: 1, stagger: 0.1, onComplete: () => { card.visible = false; } });
             
-            // Trigger Particles
             particleMaterial.opacity = 0.8;
             gsap.to(particleMaterial, {
                 opacity: 0,
@@ -238,8 +427,8 @@
             requestAnimationFrame(animate);
 
             if (!isFlipped && !isDissipated) {
-                card.rotation.x += (mouseY * 0.5 - card.rotation.x) * 0.1;
-                card.rotation.y += (mouseX * 0.5 - card.rotation.y) * 0.1;
+                card.rotation.x += (mouseY * 0.4 - card.rotation.x) * 0.1;
+                card.rotation.y += (mouseX * 0.4 - card.rotation.y) * 0.1;
             }
 
             if (isDissipated) {
@@ -268,6 +457,15 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Form Logic
+        document.getElementById('lead-magnet').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.innerText = "ACCESS GRANTED";
+            btn.disabled = true;
+            gsap.to(btn, { backgroundColor: "#2d1b4e", duration: 0.5 });
         });
     </script>
 </body>
