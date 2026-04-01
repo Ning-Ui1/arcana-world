@@ -3,470 +3,360 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARCANA | The Digital Alchemist's Altar</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <title>ARCANA V2 | The Sacred Ritual</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --color-obsidian: #050505;
-            --color-ethereal-gold: #c5a059;
-            --color-mystic-purple: #2d1b4e;
-            --glass: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(197, 160, 89, 0.2);
+            --gold: #c5a059;
+            --obsidian: #020202;
         }
-
-        * {
-            box-sizing: border-box;
-            -webkit-font-smoothing: antialiased;
-        }
-
         body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            background-color: var(--color-obsidian);
-            color: #ffffff;
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
-        }
-
-        h1, h2, h3, .cinzel {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background: var(--obsidian);
+            color: white;
             font-family: 'Cinzel', serif;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
+            overflow: hidden;
         }
-
         #canvas-container {
-            width: 100vw;
-            height: 100vh;
             position: fixed;
-            top: 0;
-            left: 0;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             z-index: 1;
-            pointer-events: none;
         }
-
-        /* Sections */
-        section {
+        .overlay {
             position: relative;
             z-index: 10;
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 40px 20px;
+            pointer-events: none;
+            background: radial-gradient(circle at center, transparent 0%, rgba(2,2,2,0.4) 100%);
         }
-
-        /* Hero Section */
-        .hero {
-            height: 100vh;
-            text-align: center;
-        }
-
         h1 {
-            font-size: clamp(2.5rem, 8vw, 4.5rem);
-            color: var(--color-ethereal-gold);
+            font-size: 4rem;
+            letter-spacing: 1.2rem;
+            color: var(--gold);
             margin: 0;
+            text-shadow: 0 0 40px rgba(197, 160, 89, 0.4);
             opacity: 0;
-            transform: translateY(30px);
-            text-shadow: 0 0 30px rgba(197, 160, 89, 0.3);
         }
-
-        .hero-controls {
-            margin-top: 60px;
-            display: flex;
-            gap: 20px;
+        .controls {
+            margin-top: 100px;
             pointer-events: auto;
+            opacity: 0;
         }
-
-        /* Pricing Section */
-        .pricing {
-            background: linear-gradient(to bottom, transparent, rgba(5, 5, 5, 0.8));
-            backdrop-filter: blur(5px);
-        }
-
-        .section-title {
-            font-size: 2rem;
-            color: var(--color-ethereal-gold);
-            margin-bottom: 60px;
-            text-align: center;
-        }
-
-        .price-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            width: 100%;
-            max-width: 1100px;
-        }
-
-        .price-card {
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(15px);
-            padding: 50px 30px;
-            text-align: center;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .price-card:hover {
-            border-color: var(--color-ethereal-gold);
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-        }
-
-        .price-card.featured {
-            border-color: var(--color-ethereal-gold);
-            background: rgba(197, 160, 89, 0.05);
-        }
-
-        .tier-name {
-            font-size: 0.9rem;
-            color: var(--color-ethereal-gold);
-            margin-bottom: 10px;
-        }
-
-        .tier-price {
-            font-size: 3rem;
-            margin-bottom: 30px;
-            font-family: 'Cinzel', serif;
-        }
-
-        .tier-features {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 40px 0;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.9rem;
-            line-height: 2;
-        }
-
-        /* Lead Magnet Footer */
-        .footer {
-            min-height: 60vh;
-            background: #000;
-            text-align: center;
-        }
-
-        .newsletter-box {
-            max-width: 500px;
-            width: 100%;
-        }
-
-        input[type="email"] {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            padding: 15px 20px;
-            color: #fff;
-            margin-bottom: 20px;
-            font-family: inherit;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-
-        input[type="email"]:focus {
-            border-color: var(--color-ethereal-gold);
-        }
-
-        /* Buttons */
         .btn {
             background: transparent;
-            border: 1px solid var(--glass-border);
-            color: var(--color-ethereal-gold);
-            padding: 15px 40px;
-            font-size: 0.75rem;
-            letter-spacing: 0.3em;
+            border: 0.5px solid rgba(197, 160, 89, 0.4);
+            color: var(--gold);
+            padding: 18px 50px;
+            font-family: inherit;
             text-transform: uppercase;
+            letter-spacing: 0.4rem;
+            font-size: 0.7rem;
             cursor: pointer;
-            transition: all 0.5s ease;
-            text-decoration: none;
-            display: inline-block;
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            margin: 0 15px;
         }
-
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 120%; height: 120%;
+            background: var(--gold);
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: -1;
+            opacity: 0.1;
+        }
+        .btn:hover::before { transform: translate(-50%, -50%) scale(1); }
         .btn:hover {
-            background: rgba(197, 160, 89, 0.1);
-            border-color: var(--color-ethereal-gold);
-            box-shadow: 0 0 20px rgba(197, 160, 89, 0.2);
+            border-color: var(--gold);
+            letter-spacing: 0.5rem;
+            box-shadow: 0 0 30px rgba(197, 160, 89, 0.2);
         }
-
-        .btn-primary {
-            background: var(--color-ethereal-gold);
-            color: var(--color-obsidian);
-            font-weight: 700;
-        }
-
-        .btn-primary:hover {
-            background: #e0bc75;
-            color: var(--color-obsidian);
-        }
-
-        /* Loader */
+        
+        /* Ritual Loader */
         .loader {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #050505;
+            background: #000;
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            transition: opacity 1s ease;
         }
+        .ritual-circle {
+            width: 100px; height: 100px;
+            border: 1px solid var(--gold);
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 3s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        .loader.hidden {
-            opacity: 0;
+        .vignette {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            box-shadow: inset 0 0 200px rgba(0,0,0,0.9);
             pointer-events: none;
-        }
-
-        .status-text {
-            color: var(--color-ethereal-gold);
-            font-size: 0.7rem;
-            letter-spacing: 1em;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.8; }
-        }
-
-        @media (max-width: 768px) {
-            h1 { font-size: 3rem; }
-            .price-grid { grid-template-columns: 1fr; }
+            z-index: 5;
         }
     </style>
 </head>
 <body>
     <div class="loader" id="loader">
-        <div class="status-text">INVOKING ARCANA...</div>
+        <div class="ritual-circle"></div>
+    </div>
+    <div class="vignette"></div>
+    <div id="canvas-container"></div>
+    <div class="overlay">
+        <h1 id="title">ARCANA</h1>
+        <div class="controls" id="controls">
+            <button class="btn" id="flip-btn">Invoke Fate</button>
+            <button class="btn" id="dissipate-btn">Ascend</button>
+        </div>
     </div>
 
-    <div id="canvas-container"></div>
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    
+    <!-- Shaders -->
+    <script id="aurora-vs" type="x-shader/x-vertex">
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    </script>
+    <script id="aurora-fs" type="x-shader/x-fragment">
+        uniform float time;
+        uniform vec2 resolution;
+        varying vec2 vUv;
 
-    <section class="hero">
-        <h1 id="main-title">ARCANA</h1>
-        <div class="hero-controls">
-            <button class="btn" id="flip-btn">Reveal Fate</button>
-            <button class="btn" id="dissipate-btn">Dissipate</button>
-        </div>
-    </section>
-
-    <section class="pricing">
-        <h2 class="section-title">CHOOSE YOUR RITUAL</h2>
-        <div class="price-grid">
-            <!-- Tier 1 -->
-            <div class="price-card">
-                <div>
-                    <div class="tier-name">The Seeker</div>
-                    <div class="tier-price">$0</div>
-                    <ul class="tier-features">
-                        <li>One Daily Card Pull</li>
-                        <li>Basic Arcana Meaning</li>
-                        <li>Digital Altar Access</li>
-                    </ul>
-                </div>
-                <button class="btn">Begin Free</button>
-            </div>
-
-            <!-- Tier 2 -->
-            <div class="price-card featured">
-                <div>
-                    <div class="tier-name">The Alchemist</div>
-                    <div class="tier-price">$19.99</div>
-                    <ul class="tier-features">
-                        <li>Full Celtic Cross Spread</li>
-                        <li>AI Deep-Soul Analysis</li>
-                        <li>Downloadable PDF Ritual</li>
-                    </ul>
-                </div>
-                <button class="btn btn-primary">Start Journey</button>
-            </div>
-
-            <!-- Tier 3 -->
-            <div class="price-card">
-                <div>
-                    <div class="tier-name">The Master</div>
-                    <div class="tier-price">$299</div>
-                    <ul class="tier-features">
-                        <li>1:1 Visionary Session</li>
-                        <li>Lifetime Ritual Updates</li>
-                        <li>Physical Gold-Foil Deck</li>
-                    </ul>
-                </div>
-                <button class="btn">Book Master</button>
-            </div>
-        </div>
-    </section>
-
-    <section class="footer">
-        <div class="newsletter-box">
-            <h2 class="cinzel" style="color: var(--color-ethereal-gold); margin-bottom: 20px;">Join The Inner Circle</h2>
-            <p style="color: rgba(255,255,255,0.5); margin-bottom: 40px; font-size: 0.9rem;">Be the first to receive lunar phase updates and exclusive ritual access.</p>
-            <form id="lead-magnet">
-                <input type="email" placeholder="YOUR EMAIL ADDRESS" required>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Grant Access</button>
-            </form>
-        </div>
-    </section>
+        void main() {
+            vec2 p = vUv * 2.0 - 1.0;
+            p.x *= resolution.x / resolution.y;
+            
+            float color = 0.0;
+            for(float i=1.0; i<4.0; i++) {
+                p.x += 0.3 / i * sin(i * 3.0 * p.y + time + i * 0.5);
+                p.y += 0.3 / i * cos(i * 3.0 * p.x + time + i * 0.5);
+                color += abs(0.01 / p.x) * i;
+            }
+            
+            vec3 baseColor = vec3(0.02, 0.01, 0.05); // Obsidian deep purple
+            vec3 auroraColor = vec3(0.1, 0.05, 0.2) * color;
+            gl_FragColor = vec4(baseColor + auroraColor * 0.3, 1.0);
+        }
+    </script>
 
     <script>
-        // Three.js Scene Setup
-        const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        container.appendChild(renderer.domElement);
-
-        camera.position.z = 8;
-
-        // Lights
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-        scene.add(ambientLight);
-
-        const pointLight = new THREE.PointLight(0xffffff, 1);
-        pointLight.position.set(5, 5, 5);
-        scene.add(pointLight);
-
-        const spotLight = new THREE.SpotLight(0x8a2be2, 2);
-        spotLight.position.set(-5, 5, 5);
-        scene.add(spotLight);
-
-        // Card Geometry
-        const cardGeometry = new THREE.BoxGeometry(2.2, 3.8, 0.05);
-        const materials = [
-            new THREE.MeshStandardMaterial({ color: 0x0a0a0a }), // Right
-            new THREE.MeshStandardMaterial({ color: 0x0a0a0a }), // Left
-            new THREE.MeshStandardMaterial({ color: 0x0a0a0a }), // Top
-            new THREE.MeshStandardMaterial({ color: 0x0a0a0a }), // Bottom
-            new THREE.MeshStandardMaterial({ color: 0x1a1a1a, emissive: 0x2d1b4e, emissiveIntensity: 0.2 }), // Front
-            new THREE.MeshStandardMaterial({ color: 0x0a0a0a, emissive: 0xc5a059, emissiveIntensity: 0.1 })  // Back
-        ];
-        const card = new THREE.Mesh(cardGeometry, materials);
-        scene.add(card);
-
-        // Particle System
-        const particleCount = 2000;
-        const particleGeometry = new THREE.BufferGeometry();
-        const positions = new Float32Array(particleCount * 3);
-        const velocities = new Float32Array(particleCount * 3);
-
-        for (let i = 0; i < particleCount; i++) {
-            positions[i * 3] = (Math.random() - 0.5) * 2;
-            positions[i * 3 + 1] = (Math.random() - 0.5) * 3.8;
-            positions[i * 3 + 2] = (Math.random() - 0.5) * 0.1;
-
-            velocities[i * 3] = (Math.random() - 0.5) * 0.02;
-            velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.02;
-            velocities[i * 3 + 2] = Math.random() * 0.04;
-        }
-
-        particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        const particleMaterial = new THREE.PointsMaterial({
-            color: 0xc5a059,
-            size: 0.025,
-            transparent: true,
-            opacity: 0,
-            blending: THREE.AdditiveBlending
-        });
-        const particles = new THREE.Points(particleGeometry, particleMaterial);
-        scene.add(particles);
-
-        // Mouse Parallax
-        let mouseX = 0, mouseY = 0;
-        window.addEventListener('mousemove', (e) => {
-            mouseX = (e.clientX / window.innerWidth) - 0.5;
-            mouseY = (e.clientY / window.innerHeight) - 0.5;
-        });
-
-        // Animations
-        let isFlipped = false;
-        let isDissipated = false;
-
-        document.getElementById('flip-btn').addEventListener('click', () => {
-            isFlipped = !isFlipped;
-            gsap.to(card.rotation, {
-                y: isFlipped ? Math.PI : 0,
-                duration: 1.2,
-                ease: "back.out(1.7)"
-            });
-            document.getElementById('flip-btn').innerText = isFlipped ? "Reset" : "Reveal Fate";
-        });
-
-        document.getElementById('dissipate-btn').addEventListener('click', () => {
-            if (isDissipated) return;
-            isDissipated = true;
-            
-            gsap.to(card.material, { opacity: 0, duration: 1, stagger: 0.1, onComplete: () => { card.visible = false; } });
-            
-            particleMaterial.opacity = 0.8;
-            gsap.to(particleMaterial, {
-                opacity: 0,
-                duration: 2.5,
-                delay: 1,
-                ease: "power2.inOut",
-                onComplete: () => {
-                    card.visible = true;
-                    gsap.to(card.material, { opacity: 1, duration: 1 });
-                    isDissipated = false;
-                    isFlipped = false;
-                    card.rotation.y = 0;
-                    document.getElementById('flip-btn').innerText = "Reveal Fate";
-                }
-            });
-        });
-
-        // Loop
-        function animate() {
-            requestAnimationFrame(animate);
-
-            if (!isFlipped && !isDissipated) {
-                card.rotation.x += (mouseY * 0.4 - card.rotation.x) * 0.1;
-                card.rotation.y += (mouseX * 0.4 - card.rotation.y) * 0.1;
-            }
-
-            if (isDissipated) {
-                const pos = particleGeometry.attributes.position.array;
-                for (let i = 0; i < particleCount; i++) {
-                    pos[i * 3] += velocities[i * 3];
-                    pos[i * 3 + 1] += velocities[i * 3 + 1];
-                    pos[i * 3 + 2] += velocities[i * 3 + 2];
-                }
-                particleGeometry.attributes.position.needsUpdate = true;
-            }
-
-            renderer.render(scene, camera);
-        }
-
-        // Init Sequence
-        window.onload = () => {
-            setTimeout(() => {
-                document.getElementById('loader').classList.add('hidden');
-                gsap.to('#main-title', { opacity: 1, y: -20, duration: 1.5, delay: 0.5, ease: "power3.out" });
-                animate();
-            }, 1500);
-        };
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
+        (function() {
+            // Scene Setup
+            const container = document.getElementById('canvas-container');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.toneMapping = THREE.ReinhardToneMapping;
+            container.appendChild(renderer.domElement);
 
-        // Form Logic
-        document.getElementById('lead-magnet').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button');
-            btn.innerText = "ACCESS GRANTED";
-            btn.disabled = true;
-            gsap.to(btn, { backgroundColor: "#2d1b4e", duration: 0.5 });
-        });
+            camera.position.z = 10;
+
+            // Lights
+            const ambient = new THREE.AmbientLight(0xffffff, 0.1);
+            scene.add(ambient);
+
+            const goldLight = new THREE.PointLight(0xc5a059, 2, 20);
+            goldLight.position.set(2, 2, 5);
+            scene.add(goldLight);
+
+            const purpleLight = new THREE.PointLight(0x2d1b4e, 3, 20);
+            purpleLight.position.set(-3, -2, 4);
+            scene.add(purpleLight);
+
+            // Background Aurora
+            const bgGeometry = new THREE.PlaneGeometry(30, 20);
+            const bgMaterial = new THREE.ShaderMaterial({
+                uniforms: {
+                    time: { value: 0 },
+                    resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+                },
+                vertexShader: document.getElementById('aurora-vs').textContent,
+                fragmentShader: document.getElementById('aurora-fs').textContent,
+                depthWrite: false
+            });
+            const background = new THREE.Mesh(bgGeometry, bgMaterial);
+            background.position.z = -5;
+            scene.add(background);
+
+            // Card - The Masterpiece
+            const cardGroup = new THREE.Group();
+            scene.add(cardGroup);
+
+            const cardGeo = new THREE.BoxGeometry(2.5, 4.2, 0.08);
+            const cardMat = [
+                new THREE.MeshStandardMaterial({ color: 0x000000, metalness: 0.9, roughness: 0.1 }), // Sides
+                new THREE.MeshStandardMaterial({ color: 0x000000, metalness: 0.9, roughness: 0.1 }),
+                new THREE.MeshStandardMaterial({ color: 0x000000, metalness: 0.9, roughness: 0.1 }),
+                new THREE.MeshStandardMaterial({ color: 0x000000, metalness: 0.9, roughness: 0.1 }),
+                new THREE.MeshStandardMaterial({ 
+                    color: 0x050505, 
+                    emissive: 0x2d1b4e, 
+                    emissiveIntensity: 0.4,
+                    metalness: 1, 
+                    roughness: 0.2,
+                    transparent: true
+                }), // Front
+                new THREE.MeshStandardMaterial({ 
+                    color: 0x020202, 
+                    emissive: 0xc5a059, 
+                    emissiveIntensity: 0.15,
+                    metalness: 1, 
+                    roughness: 0.1,
+                    transparent: true
+                })  // Back
+            ];
+            const card = new THREE.Mesh(cardGeo, cardMat);
+            cardGroup.add(card);
+
+            // Gold Edge Frame (The Alchemical Line)
+            const frameGeo = new THREE.BoxGeometry(2.55, 4.25, 0.09);
+            const frameMat = new THREE.MeshStandardMaterial({ 
+                color: 0xc5a059, 
+                metalness: 1, 
+                roughness: 0.1, 
+                emissive: 0xc5a059, 
+                emissiveIntensity: 0.2,
+                wireframe: true 
+            });
+            const frame = new THREE.Mesh(frameGeo, frameMat);
+            cardGroup.add(frame);
+
+            // Particle Field (Soul Fragments)
+            const pCount = 3000;
+            const pGeo = new THREE.BufferGeometry();
+            const pPos = new Float32Array(pCount * 3);
+            const pVel = new Float32Array(pCount * 3);
+            for(let i=0; i<pCount; i++) {
+                pPos[i*3] = (Math.random()-0.5)*2.5;
+                pPos[i*3+1] = (Math.random()-0.5)*4.2;
+                pPos[i*3+2] = (Math.random()-0.5)*0.1;
+                pVel[i*3] = (Math.random()-0.5)*0.01;
+                pVel[i*3+1] = (Math.random()-0.5)*0.01;
+                pVel[i*3+2] = Math.random()*0.02;
+            }
+            pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+            const pMat = new THREE.PointsMaterial({
+                color: 0xc5a059,
+                size: 0.015,
+                transparent: true,
+                opacity: 0,
+                blending: THREE.AdditiveBlending
+            });
+            const particles = new THREE.Points(pGeo, pMat);
+            scene.add(particles);
+
+            // Mouse Inertia Logic
+            let mouse = { x: 0, y: 0 };
+            let targetRotation = { x: 0, y: 0 };
+            window.addEventListener('mousemove', (e) => {
+                mouse.x = (e.clientX / window.innerWidth) - 0.5;
+                mouse.y = (e.clientY / window.innerHeight) - 0.5;
+            });
+
+            // Ritual States
+            let isInvoked = false;
+            let isAscended = false;
+
+            document.getElementById('flip-btn').addEventListener('click', () => {
+                isInvoked = !isInvoked;
+                gsap.to(cardGroup.rotation, {
+                    y: isInvoked ? Math.PI : 0,
+                    duration: 2.2,
+                    ease: "expo.inOut"
+                });
+                gsap.to(goldLight, { intensity: isInvoked ? 4 : 2, duration: 1 });
+                document.getElementById('flip-btn').innerText = isInvoked ? "Seal Fate" : "Invoke Fate";
+            });
+
+            document.getElementById('dissipate-btn').addEventListener('click', () => {
+                if(isAscended) return;
+                isAscended = true;
+                
+                // Hide Card
+                gsap.to(cardMat, { opacity: 0, duration: 1.5, stagger: 0.1 });
+                gsap.to(frameMat, { opacity: 0, duration: 1 });
+                
+                // Invoke Particles
+                gsap.to(pMat, { opacity: 0.8, duration: 0.5 });
+                
+                gsap.delayedCall(1.5, () => {
+                    gsap.to(pMat, { opacity: 0, duration: 3, ease: "power2.inOut", onComplete: () => {
+                        cardMat.forEach(m => m.opacity = 1);
+                        frameMat.opacity = 1;
+                        isAscended = false;
+                        isInvoked = false;
+                        cardGroup.rotation.y = 0;
+                        document.getElementById('flip-btn').innerText = "Invoke Fate";
+                    }});
+                });
+            });
+
+            // Animation Loop
+            function animate(t) {
+                requestAnimationFrame(animate);
+                const time = t * 0.001;
+                
+                bgMaterial.uniforms.time.value = time;
+                
+                // Inertia & Heavy Floating
+                if(!isInvoked && !isAscended) {
+                    targetRotation.x += (mouse.y * 0.4 - targetRotation.x) * 0.05;
+                    targetRotation.y += (mouse.x * 0.4 - targetRotation.y) * 0.05;
+                    cardGroup.rotation.x = targetRotation.x + Math.sin(time) * 0.05;
+                    cardGroup.rotation.y = targetRotation.y + Math.cos(time * 0.5) * 0.05;
+                }
+                
+                if(isAscended) {
+                    const pos = pGeo.attributes.position.array;
+                    for(let i=0; i<pCount; i++) {
+                        pos[i*3] += pVel[i*3] * (1 + Math.sin(time));
+                        pos[i*3+1] += pVel[i*3+1] * (2 + Math.cos(time));
+                        pos[i*3+2] += pVel[i*3+2] * 5;
+                    }
+                    pGeo.attributes.position.needsUpdate = true;
+                }
+
+                renderer.render(scene, camera);
+            }
+
+            // Reveal Sequence
+            window.onload = () => {
+                gsap.to('#loader', { opacity: 0, duration: 2, delay: 1.5, onComplete: () => {
+                    document.getElementById('loader').style.display = 'none';
+                    gsap.to('#title', { opacity: 1, duration: 2, ease: "power4.out" });
+                    gsap.to('#controls', { opacity: 1, duration: 2, delay: 0.5 });
+                    animate(0);
+                }});
+            };
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                bgMaterial.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
+            });
+        })();
     </script>
 </body>
 </html>
+
